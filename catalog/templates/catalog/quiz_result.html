@@ -1,0 +1,514 @@
+{% extends 'catalog/base.html' %}
+{% block content %}
+<style>
+    :root {
+        --primary: #2D6CDF;
+        --primary-dark: #1B4F9C;
+        --bg-light: #F5F7FC;
+        --border: #DADDE5;
+        --text-dark: #2E2E2E;
+        --accent-yellow: #FFC947;
+        --accent-green: #00C9A7;
+        --white: #ffffff;
+        --shadow-sm: 0 2px 8px rgba(45, 108, 223, 0.08);
+        --shadow-md: 0 4px 16px rgba(45, 108, 223, 0.12);
+        --shadow-lg: 0 8px 24px rgba(45, 108, 223, 0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+        background: var(--bg-light);
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        color: var(--text-dark);
+        line-height: 1.6;
+    }
+
+    .result-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .result-card {
+        background: var(--white);
+        border-radius: 16px;
+        box-shadow: var(--shadow-lg);
+        max-width: 700px;
+        width: 100%;
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+        background: var(--primary);
+        color: var(--white);
+        padding: 2.5rem 2rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .result-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-yellow), var(--accent-green));
+    }
+
+    .quiz-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .completion-text {
+        font-size: 1rem;
+        opacity: 0.95;
+        font-weight: 400;
+    }
+
+    .score-section {
+        padding: 2.5rem 2rem;
+    }
+
+    .score-display {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .score-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--white);
+        animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
+        box-shadow: var(--shadow-md);
+    }
+
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .excellent { background: linear-gradient(135deg, var(--accent-green), #00a389); }
+    .good { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+    .average { background: linear-gradient(135deg, var(--accent-yellow), #e6b73f); }
+    .poor { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+
+    .score-text {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin: 0.5rem 0;
+        letter-spacing: -0.02em;
+    }
+
+    .score-percentage {
+        font-size: 1.125rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .performance-badge {
+        display: inline-block;
+        padding: 0.5rem 1.25rem;
+        border-radius: 24px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin: 1rem 0 1.5rem;
+        color: var(--white);
+        animation: fadeIn 0.5s ease-out 0.6s backwards;
+    }
+
+    .progress-wrapper {
+        margin: 2rem 0;
+        animation: fadeIn 0.5s ease-out 0.8s backwards;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.75rem;
+    }
+
+    .progress-bar {
+        height: 12px;
+        background: var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 6px;
+        transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1) 1s;
+        position: relative;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+        animation: fadeIn 0.5s ease-out 1s backwards;
+    }
+
+    .stat-card {
+        background: var(--bg-light);
+        padding: 1.5rem 1rem;
+        border-radius: 12px;
+        text-align: center;
+        border: 2px solid var(--border);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary);
+    }
+
+    .stat-number {
+        font-size: 1.875rem;
+        font-weight: 800;
+        color: var(--primary);
+        display: block;
+        letter-spacing: -0.02em;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+        font-weight: 500;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 2rem;
+        animation: fadeIn 0.5s ease-out 1.2s backwards;
+    }
+
+    .btn {
+        padding: 0.875rem 1.75rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        letter-spacing: -0.01em;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: var(--white);
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-success {
+        background: var(--accent-green);
+        color: var(--white);
+    }
+
+    .btn-success:hover {
+        background: #00a389;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline {
+        background: var(--white);
+        color: var(--text-dark);
+        border: 2px solid var(--border);
+    }
+
+    .btn-outline:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .confetti-piece {
+        position: fixed;
+        width: 8px;
+        height: 8px;
+        pointer-events: none;
+        z-index: 9999;
+        animation: confettiFall 3s linear forwards;
+    }
+
+    @keyframes confettiFall {
+        0% {
+            transform: translateY(-100vh) rotate(0deg);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .result-header {
+            padding: 2rem 1.5rem;
+        }
+
+        .quiz-title {
+            font-size: 1.5rem;
+        }
+
+        .score-section {
+            padding: 2rem 1.5rem;
+        }
+
+        .score-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+
+        .score-text {
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+
+    @media print {
+        body {
+            background: white;
+        }
+        .action-buttons {
+            display: none;
+        }
+        .result-card {
+            box-shadow: none;
+        }
+    }
+</style>
+
+<div class="result-container">
+    <div class="result-card">
+        <div class="result-header">
+            <h1 class="quiz-title">{{ quiz.title }}</h1>
+            <p class="completion-text">Quiz Completed Successfully!</p>
+        </div>
+
+        <div class="score-section">
+            {% load math_filters %}
+                {% with incorrect=total|add:score|mul:-1 %}
+                {% widthratio score total 100 as percentage %}
+                
+                <div class="score-display">
+                    {% if percentage >= 90 %}
+                        <div class="score-icon excellent">{{ percentage }}%</div>
+                        <div class="performance-badge excellent">Outstanding Performance!</div>
+                    {% elif percentage >= 75 %}
+                        <div class="score-icon good">{{ percentage }}%</div>
+                        <div class="performance-badge good">Great Work!</div>
+                    {% elif percentage >= 50 %}
+                        <div class="score-icon average">{{ percentage }}%</div>
+                        <div class="performance-badge average">Good Effort!</div>
+                    {% else %}
+                        <div class="score-icon poor">{{ percentage }}%</div>
+                        <div class="performance-badge poor">Keep Practicing!</div>
+                    {% endif %}
+
+                    <div class="score-text" data-score="{{ score }}" data-total="{{ total }}">0 / {{ total }}</div>
+                    <div class="score-percentage">{{ percentage }}% Correct</div>
+                </div>
+
+                <div class="progress-wrapper">
+                    <div class="progress-label">
+                        <span>Your Performance</span>
+                        <span>{{ percentage }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill {% if percentage >= 90 %}excellent{% elif percentage >= 75 %}good{% elif percentage >= 50 %}average{% else %}poor{% endif %}" data-percentage="{{ percentage }}"></div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" data-count="{{ score }}">0</span>
+                        <span class="stat-label">Correct</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" data-count="{{ incorrect }}">0</span>
+                        <span class="stat-label">Incorrect</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ total }}</span>
+                        <span class="stat-label">Total Questions</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">
+                            {% if percentage >= 90 %}A+
+                            {% elif percentage >= 80 %}A
+                            {% elif percentage >= 70 %}B
+                            {% elif percentage >= 60 %}C
+                            {% else %}D{% endif %}
+                        </span>
+                        <span class="stat-label">Grade</span>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="/" class="btn btn-primary">Back to Home</a>
+                    <a href="{% url 'quiz_detail' quiz.pk %}" class="btn btn-success">Retake Quiz</a>
+                    <button onclick="shareResult()" class="btn btn-outline">Share Result</button>
+                    <button onclick="window.print()" class="btn btn-outline">Print Certificate</button>
+                </div>
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const scoreEl = document.querySelector('.score-text');
+    const targetScore = parseInt(scoreEl.dataset.score);
+    const targetTotal = parseInt(scoreEl.dataset.total);
+    const percentage = Math.round((targetScore / targetTotal) * 100);
+
+    let currentScore = 0;
+    const duration = 1500;
+    const increment = targetScore / (duration / 16);
+    
+    const scoreInterval = setInterval(() => {
+        currentScore += increment;
+        if (currentScore >= targetScore) {
+            currentScore = targetScore;
+            clearInterval(scoreInterval);
+        }
+        scoreEl.textContent = `${Math.floor(currentScore)} / ${targetTotal}`;
+    }, 16);
+
+    document.querySelectorAll('.stat-number[data-count]').forEach(el => {
+        const target = parseInt(el.dataset.count);
+        let current = 0;
+        const increment = target / (duration / 16);
+        
+        const interval = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(interval);
+            }
+            el.textContent = Math.floor(current);
+        }, 16);
+    });
+
+    setTimeout(() => {
+        const progressFill = document.querySelector('.progress-fill');
+        const targetPercentage = parseInt(progressFill.dataset.percentage);
+        progressFill.style.width = targetPercentage + '%';
+    }, 1000);
+
+    if (percentage >= 90) {
+        setTimeout(createConfetti, 800);
+    }
+});
+
+function createConfetti() {
+    const colors = ['#2D6CDF', '#FFC947', '#00C9A7', '#1B4F9C'];
+    const confettiCount = 80;
+    
+    for (let i = 0; i < confettiCount; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti-piece';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDelay = Math.random() * 0.5 + 's';
+            confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 3500);
+        }, i * 30);
+    }
+}
+
+function shareResult() {
+    const scoreEl = document.querySelector('.score-text');
+    const percentage = document.querySelector('.score-percentage').textContent;
+    const quizTitle = document.querySelector('.quiz-title').textContent;
+    const text = `I scored ${scoreEl.textContent} (${percentage}) in "${quizTitle}"! 🎯`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Quiz Result',
+            text: text,
+            url: window.location.href
+        }).catch(() => {});
+    } else {
+        const fullText = text + '\n' + window.location.href;
+        navigator.clipboard.writeText(fullText).then(() => {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = originalText, 2000);
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1234 @@
+{% extends 'catalog/base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #2D6CDF;
+        --dark-blue: #1B4F9C;
+        --light-bg: #F5F7FC;
+        --border-gray: #DADDE5;
+        --text-dark: #2E2E2E;
+        --accent-yellow: #FFC947;
+        --accent-green: #00C9A7;
+        --white: #FFFFFF;
+        --shadow-sm: 0 2px 8px rgba(45, 108, 223, 0.08);
+        --shadow-md: 0 4px 16px rgba(45, 108, 223, 0.12);
+        --shadow-lg: 0 8px 24px rgba(45, 108, 223, 0.16);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--light-bg);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        line-height: 1.6;
+        color: var(--text-dark);
+        min-height: 100vh;
+    }
+
+    .profile-wrapper {
+        padding: 2rem 0;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Profile Header */
+    .profile-header {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 2.5rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-gray);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, var(--primary-blue), var(--dark-blue));
+    }
+
+    .profile-content {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .profile-avatar-wrapper {
+        position: relative;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--white);
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+    }
+
+    .profile-avatar:hover {
+        transform: scale(1.05);
+    }
+
+    .status-indicator {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
+        background: var(--accent-green);
+        border: 3px solid var(--white);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(0, 201, 167, 0.7);
+        }
+        50% {
+            box-shadow: 0 0 0 8px rgba(0, 201, 167, 0);
+        }
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-bio {
+        font-size: 1rem;
+        color: #6B7280;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-badges {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .badge-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.8rem;
+        background: var(--light-bg);
+        border: 1px solid var(--border-gray);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-dark);
+        transition: var(--transition);
+    }
+
+    .badge-item:hover {
+        background: var(--white);
+        border-color: var(--primary-blue);
+    }
+
+    /* Level Progress */
+    .level-section {
+        background: var(--light-bg);
+        border-radius: 12px;
+        padding: 1.25rem;
+        border: 1px solid var(--border-gray);
+    }
+
+    .level-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .level-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .level-number {
+        background: var(--primary-blue);
+        color: var(--white);
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+    }
+
+    .xp-info {
+        font-size: 0.875rem;
+        color: #6B7280;
+        font-weight: 500;
+    }
+
+    .progress-track {
+        width: 100%;
+        height: 8px;
+        background: var(--white);
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid var(--border-gray);
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-green), #00E5B8);
+        border-radius: 4px;
+        transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--white);
+        border: 1px solid var(--border-gray);
+        border-radius: 12px;
+        padding: 1.75rem 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary-blue);
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card:hover::before {
+        transform: scaleY(1);
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        display: inline-block;
+        transition: var(--transition);
+    }
+
+    .stat-card:hover .stat-icon {
+        transform: scale(1.15);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Achievements */
+    .achievements-container {
+        background: var(--white);
+        border: 1px solid var(--border-gray);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-icon {
+        font-size: 1.75rem;
+    }
+
+    .achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .achievement-card {
+        background: var(--light-bg);
+        border: 2px solid var(--border-gray);
+        border-radius: 12px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+        position: relative;
+    }
+
+    .achievement-card.unlocked {
+        background: var(--white);
+        border-color: var(--accent-green);
+    }
+
+    .achievement-card.locked {
+        opacity: 0.5;
+        filter: grayscale(100%);
+    }
+
+    .achievement-card.unlocked:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .achievement-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+        transition: var(--transition);
+    }
+
+    .achievement-card.unlocked:hover .achievement-icon {
+        transform: scale(1.2) rotate(5deg);
+    }
+
+    .achievement-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .achievement-desc {
+        font-size: 0.75rem;
+        color: #6B7280;
+    }
+
+    /* Content Section */
+    .content-section {
+        background: var(--white);
+        border: 1px solid var(--border-gray);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Course Card */
+    .course-item {
+        background: var(--light-bg);
+        border: 1px solid var(--border-gray);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: var(--transition);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .course-item:hover {
+        background: var(--white);
+        box-shadow: var(--shadow-md);
+        transform: translateX(4px);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .course-details {
+        flex: 1;
+    }
+
+    .course-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .course-meta {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin-bottom: 0.75rem;
+    }
+
+    .course-progress-wrapper {
+        margin-top: 0.5rem;
+    }
+
+    .course-progress-track {
+        width: 100%;
+        height: 6px;
+        background: var(--white);
+        border-radius: 3px;
+        overflow: hidden;
+        border: 1px solid var(--border-gray);
+    }
+
+    .course-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-blue), var(--dark-blue));
+        border-radius: 3px;
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .course-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .course-status.completed {
+        background: rgba(0, 201, 167, 0.1);
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+    }
+
+    .course-status.in-progress {
+        background: rgba(255, 201, 71, 0.1);
+        color: var(--accent-yellow);
+        border: 1px solid var(--accent-yellow);
+    }
+
+    /* Review Card */
+    .review-item {
+        background: var(--light-bg);
+        border: 1px solid var(--border-gray);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: var(--transition);
+        border-left: 4px solid var(--primary-blue);
+    }
+
+    .review-item:hover {
+        background: var(--white);
+        box-shadow: var(--shadow-md);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .review-course-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .review-stars {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .star {
+        color: var(--accent-yellow);
+        font-size: 1.125rem;
+    }
+
+    .review-text {
+        font-size: 0.9375rem;
+        color: #4B5563;
+        line-height: 1.7;
+        margin-bottom: 0.75rem;
+    }
+
+    .review-date {
+        font-size: 0.8125rem;
+        color: #9CA3AF;
+    }
+
+    /* Empty State */
+    .empty-box {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: var(--light-bg);
+        border: 2px dashed var(--border-gray);
+        border-radius: 12px;
+    }
+
+    .empty-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-message {
+        font-size: 0.9375rem;
+        color: #6B7280;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-button {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: var(--primary-blue);
+        color: var(--white);
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+
+    .empty-button:hover {
+        background: var(--dark-blue);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--white);
+        text-decoration: none;
+    }
+
+    /* FAB */
+    .floating-action {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--primary-blue);
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        cursor: pointer;
+        transition: var(--transition);
+        z-index: 1000;
+        text-decoration: none;
+    }
+
+    .floating-action:hover {
+        background: var(--dark-blue);
+        transform: scale(1.1);
+        box-shadow: 0 12px 32px rgba(45, 108, 223, 0.3);
+        color: var(--white);
+        text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .profile-wrapper {
+            padding: 1rem 0;
+        }
+
+        .profile-header {
+            padding: 1.5rem 1rem;
+        }
+
+        .profile-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+        }
+
+        .profile-badges {
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem 1rem;
+        }
+
+        .achievements-grid {
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 1rem;
+        }
+
+        .achievement-card {
+            padding: 1rem 0.75rem;
+        }
+
+        .course-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .course-status {
+            align-self: stretch;
+            justify-content: center;
+        }
+
+        .floating-action {
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 48px;
+            height: 48px;
+            font-size: 1.25rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .profile-header {
+            padding: 1.25rem 0.75rem;
+        }
+
+        .content-section,
+        .achievements-container {
+            padding: 1.5rem 1rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="profile-wrapper">
+    <div class="container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-content">
+                <div class="profile-avatar-wrapper">
+                    <div class="profile-avatar">
+                        {{ user.username|first|upper }}
+                    </div>
+                    <div class="status-indicator"></div>
+                </div>
+                <div class="profile-info">
+                    <h1 class="profile-name">{{ user.username }}</h1>
+                    <p class="profile-bio">Learning enthusiast • Course explorer</p>
+                    <div class="profile-badges">
+                        <span class="badge-item">
+                            <span>📚</span>
+                            <span>{{ enrollments|length }} Enrolled</span>
+                        </span>
+                        <span class="badge-item">
+                            <span>✅</span>
+                            <span>{{ completed_count|default:0 }} Completed</span>
+                        </span>
+                        <span class="badge-item">
+                            <span>⭐</span>
+                            <span>{{ reviews|length }} Reviews</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Level Progress -->
+            <div class="level-section">
+                <div class="level-header">
+                    <div class="level-label">
+                        <span>🏆</span>
+                        <span>Level <span class="level-number">{{ user_level|default:1 }}</span></span>
+                    </div>
+                    <span class="xp-info">{{ user_xp|default:0 }} / {{ next_level_xp|default:100 }} XP</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" style="width: {{ xp_percentage|default:25 }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value">{{ enrollments|length }}</div>
+                <div class="stat-label">Total Courses</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value">{{ completed_count|default:0 }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-value">{{ reviews|length }}</div>
+                <div class="stat-label">Reviews</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value">{{ progress_percentage|default:0 }}%</div>
+                <div class="stat-label">Progress</div>
+            </div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="achievements-container">
+            <h2 class="section-title">
+                <span class="section-icon">🏅</span>
+                <span>Achievements</span>
+            </h2>
+            <div class="achievements-grid">
+                <div class="achievement-card {% if completed_count >= 1 %}unlocked{% else %}locked{% endif %}">
+                    <div class="achievement-icon">🎯</div>
+                    <div class="achievement-title">First Step</div>
+                    <div class="achievement-desc">Complete 1 course</div>
+                </div>
+                <div class="achievement-card {% if completed_count >= 3 %}unlocked{% else %}locked{% endif %}">
+                    <div class="achievement-icon">🚀</div>
+                    <div class="achievement-title">Rising Star</div>
+                    <div class="achievement-desc">Complete 3 courses</div>
+                </div>
+                <div class="achievement-card {% if completed_count >= 5 %}unlocked{% else %}locked{% endif %}">
+                    <div class="achievement-icon">🎓</div>
+                    <div class="achievement-title">Scholar</div>
+                    <div class="achievement-desc">Complete 5 courses</div>
+                </div>
+                <div class="achievement-card {% if completed_count >= 10 %}unlocked{% else %}locked{% endif %}">
+                    <div class="achievement-icon">👑</div>
+                    <div class="achievement-title">Master</div>
+                    <div class="achievement-desc">Complete 10 courses</div>
+                </div>
+                <div class="achievement-card {% if reviews|length >= 5 %}unlocked{% else %}locked{% endif %}">
+                    <div class="achievement-icon">✍️</div>
+                    <div class="achievement-title">Reviewer</div>
+                    <div class="achievement-desc">Write 5 reviews</div>
+                </div>
+                <div class="achievement-card {% if enrollments|length >= 5 %}unlocked{% else %}locked{% endif %}">
+                    <div class="achievement-icon">📖</div>
+                    <div class="achievement-title">Bookworm</div>
+                    <div class="achievement-desc">Enroll in 5 courses</div>
+                </div>
+                <div class="achievement-card {% if progress_percentage >= 50 %}unlocked{% else %}locked{% endif %}">
+                    <div class="achievement-icon">⚡</div>
+                    <div class="achievement-title">Fast Learner</div>
+                    <div class="achievement-desc">Reach 50% progress</div>
+                </div>
+                <div class="achievement-card {% if progress_percentage >= 100 %}unlocked{% else %}locked{% endif %}">
+                    <div class="achievement-icon">💯</div>
+                    <div class="achievement-title">Perfectionist</div>
+                    <div class="achievement-desc">100% completion</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enrolled Courses -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <span class="section-icon">📘</span>
+                <span>My Enrolled Courses</span>
+            </h2>
+            
+            {% if enrollments %}
+                {% for enrollment in enrollments %}
+                <a href="{% url 'course_detail' enrollment.course.pk %}" class="course-item">
+                    <div class="course-details">
+                        <h3 class="course-title">{{ enrollment.course.title }}</h3>
+                        <div class="course-meta">
+                            Enrolled: {{ enrollment.enrollment_date|date:"M d, Y" }}
+                            {% if enrollment.course.instructor %}
+                                • Instructor: {{ enrollment.course.instructor.username }}
+                            {% endif %}
+                        </div>
+                        {% if not enrollment.is_completed %}
+                            <div class="course-progress-wrapper">
+                                <div class="course-progress-track">
+                                    <div class="course-progress-bar" style="width: {{ enrollment.progress_percentage|default:0 }}%"></div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="course-status {% if enrollment.is_completed %}completed{% else %}in-progress{% endif %}">
+                        {% if enrollment.is_completed %}
+                            <span>🏆</span>
+                            <span>Completed</span>
+                        {% else %}
+                            <span>📖</span>
+                            <span>In Progress</span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="empty-box">
+                    <div class="empty-icon">📚</div>
+                    <h3 class="empty-title">No Enrollments Yet</h3>
+                    <p class="empty-message">Start your learning journey by enrolling in your first course!</p>
+                    <a href="{% url 'course_list' %}" class="empty-button">Browse Courses</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Completed Courses -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <span class="section-icon">🏆</span>
+                <span>Completed Courses ({{ completed_enrollments.count }})</span>
+            </h2>
+            
+            {% if completed_enrollments %}
+                {% for enrollment in completed_enrollments %}
+                <a href="{% url 'course_detail' enrollment.course.pk %}" class="course-item">
+                    <div class="course-details">
+                        <h3 class="course-title">{{ enrollment.course.title }}</h3>
+                        <div class="course-meta">
+                            Completed • Enrolled: {{ enrollment.enrollment_date|date:"M d, Y" }}
+                            {% if enrollment.course.instructor %}
+                                • Instructor: {{ enrollment.course.instructor.username }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="course-status completed">
+                        <span>🏆</span>
+                        <span>Completed</span>
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="empty-box">
+                    <div class="empty-icon">🏆</div>
+                    <h3 class="empty-title">No Courses Completed Yet</h3>
+                    <p class="empty-message">Complete your enrolled courses to see them here!</p>
+                    <a href="{% url 'course_list' %}" class="empty-button">Browse Courses</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Reviews -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <span class="section-icon">📝</span>
+                <span>My Reviews</span>
+            </h2>
+            
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="review-item">
+                    <div class="review-header">
+                        <div>
+                            <h4 class="review-course-name">{{ review.course.title }}</h4>
+                            <div class="review-stars">
+                                {% for i in "12345" %}
+                                    <span class="star">{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="review-text">{{ review.comment }}</p>
+                    <div class="review-date">{{ review.created_at|date:"M d, Y" }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-box">
+                    <div class="empty-icon">📝</div>
+                    <h3 class="empty-title">No Reviews Yet</h3>
+                    <p class="empty-message">Share your learning experience by writing reviews!</p>
+                    <a href="{% url 'course_list' %}" class="empty-button">View Courses</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<a href="{% url 'course_list' %}" class="floating-action" title="Browse Courses">
+    📚
+</a>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeProgressAnimations();
+    initializeCardAnimations();
+    initializeAchievements();
+    initializeScrollAnimations();
+    
+    const completedCount = {{ completed_count|default:0 }};
+    if (completedCount >= 5) {
+        setTimeout(showCelebration, 800);
+    }
+});
+
+function initializeProgressAnimations() {
+    const progressBars = document.querySelectorAll('.progress-fill, .course-progress-bar');
+    
+    progressBars.forEach(bar => {
+        const targetWidth = bar.style.width;
+        bar.style.width = '0%';
+        
+        setTimeout(() => {
+            bar.style.width = targetWidth;
+        }, 300);
+    });
+}
+
+function initializeCardAnimations() {
+    const cards = document.querySelectorAll('.stat-card, .course-item, .review-item');
+    
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100 * index);
+    });
+}
+
+function initializeAchievements() {
+    const achievements = document.querySelectorAll('.achievement-card.unlocked');
+    
+    achievements.forEach((achievement, index) => {
+        achievement.style.opacity = '0';
+        achievement.style.transform = 'scale(0.8)';
+        
+        setTimeout(() => {
+            achievement.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            achievement.style.opacity = '1';
+            achievement.style.transform = 'scale(1)';
+        }, 150 * index);
+    });
+    
+    achievements.forEach(achievement => {
+        achievement.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+}
+
+function initializeScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+    
+    const sections = document.querySelectorAll('.content-section, .achievements-container');
+    sections.forEach(section => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(30px)';
+        section.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+        observer.observe(section);
+    });
+}
+
+function showCelebration() {
+    createConfetti();
+    showMessage();
+}
+
+function createConfetti() {
+    const colors = ['#2D6CDF', '#1B4F9C', '#FFC947', '#00C9A7'];
+    const confettiCount = 80;
+    const container = document.createElement('div');
+    
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.style.pointerEvents = 'none';
+    container.style.zIndex = '9999';
+    
+    document.body.appendChild(container);
+    
+    for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        const size = Math.random() * 8 + 4;
+        
+        confetti.style.position = 'absolute';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.top = '-10px';
+        confetti.style.width = size + 'px';
+        confetti.style.height = size + 'px';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        confetti.style.opacity = Math.random() * 0.6 + 0.4;
+        
+        container.appendChild(confetti);
+        
+        animateConfetti(confetti, Math.random() * 3 + 2);
+    }
+    
+    setTimeout(() => {
+        container.remove();
+    }, 5000);
+}
+
+function animateConfetti(element, duration) {
+    const startX = parseFloat(element.style.left);
+    const startTime = Date.now();
+    const endY = window.innerHeight + 20;
+    const wobble = Math.random() * 100 - 50;
+    
+    function animate() {
+        const elapsed = (Date.now() - startTime) / 1000;
+        const progress = elapsed / duration;
+        
+        if (progress < 1) {
+            const y = progress * endY;
+            const x = startX + Math.sin(progress * Math.PI * 4) * wobble;
+            const rotation = progress * 360 * 2;
+            
+            element.style.transform = `translate(${x - startX}%, ${y}px) rotate(${rotation}deg)`;
+            element.style.opacity = 1 - progress;
+            
+            requestAnimationFrame(animate);
+        } else {
+            element.remove();
+        }
+    }
+    
+    requestAnimationFrame(animate);
+}
+
+function showMessage() {
+    const message = document.createElement('div');
+    
+    message.style.position = 'fixed';
+    message.style.top = '50%';
+    message.style.left = '50%';
+    message.style.transform = 'translate(-50%, -50%) scale(0)';
+    message.style.background = 'linear-gradient(135deg, #2D6CDF, #1B4F9C)';
+    message.style.color = '#FFFFFF';
+    message.style.padding = '2rem 3rem';
+    message.style.borderRadius = '16px';
+    message.style.fontSize = '1.5rem';
+    message.style.fontWeight = '700';
+    message.style.boxShadow = '0 20px 60px rgba(45, 108, 223, 0.4)';
+    message.style.zIndex = '10000';
+    message.style.textAlign = 'center';
+    message.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    message.innerHTML = '🎉 Congratulations! 🎉<br><span style="font-size: 1rem; font-weight: 500; margin-top: 0.5rem; display: block;">You\'ve completed 5+ courses!</span>';
+    
+    document.body.appendChild(message);
+    
+    setTimeout(() => {
+        message.style.transform = 'translate(-50%, -50%) scale(1)';
+    }, 100);
+    
+    setTimeout(() => {
+        message.style.transform = 'translate(-50%, -50%) scale(0)';
+        setTimeout(() => {
+            message.remove();
+        }, 500);
+    }, 3000);
+}
+
+// Smooth scroll behavior
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Add ripple effect to clickable elements
+const clickableElements = document.querySelectorAll('.stat-card, .course-item, .achievement-card.unlocked, .empty-button');
+
+clickableElements.forEach(element => {
+    element.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.position = 'absolute';
+        ripple.style.width = size + 'px';
+        ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.style.background = 'rgba(255, 255, 255, 0.4)';
+        ripple.style.borderRadius = '50%';
+        ripple.style.transform = 'scale(0)';
+        ripple.style.pointerEvents = 'none';
+        ripple.style.transition = 'transform 0.6s ease-out, opacity 0.6s ease-out';
+        ripple.style.opacity = '1';
+        
+        const container = this.style.position === 'relative' ? this : this.parentElement;
+        if (container.style.position !== 'relative') {
+            container.style.position = 'relative';
+        }
+        
+        container.appendChild(ripple);
+        
+        setTimeout(() => {
+            ripple.style.transform = 'scale(2)';
+            ripple.style.opacity = '0';
+        }, 10);
+        
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    });
+});
+
+// Avatar interaction
+const avatar = document.querySelector('.profile-avatar');
+if (avatar) {
+    let rotationAngle = 0;
+    
+    avatar.addEventListener('click', function() {
+        rotationAngle += 360;
+        this.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        this.style.transform = `rotate(${rotationAngle}deg) scale(1.1)`;
+        
+        setTimeout(() => {
+            this.style.transform = `rotate(${rotationAngle}deg) scale(1)`;
+        }, 300);
+    });
+}
+
+// FAB scroll behavior
+const fab = document.querySelector('.floating-action');
+let lastScrollTop = 0;
+
+window.addEventListener('scroll', function() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    if (scrollTop > lastScrollTop && scrollTop > 100) {
+        fab.style.transform = 'translateY(100px)';
+    } else {
+        fab.style.transform = 'translateY(0)';
+    }
+    
+    lastScrollTop = scrollTop;
+}, false);
+
+// Add loading state to links
+document.querySelectorAll('a.course-item, a.empty-button').forEach(link => {
+    link.addEventListener('click', function(e) {
+        if (!this.classList.contains('loading')) {
+            this.classList.add('loading');
+            this.style.opacity = '0.6';
+            this.style.pointerEvents = 'none';
+        }
+    });
+});
+
+// Performance optimization: Lazy load images if any
+if ('IntersectionObserver' in window) {
+    const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                    imageObserver.unobserve(img);
+                }
+            }
+        });
+    });
+    
+    document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+    });
+}
+</script>
+{% endblock %}

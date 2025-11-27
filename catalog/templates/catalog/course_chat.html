@@ -1,0 +1,24 @@
+<h3>Course Chat</h3>
+<div id="chat-log" style="height:300px; overflow-y:scroll; border:1px solid #ccc;"></div>
+<input id="chat-message-input" type="text" placeholder="Type your message..." />
+<button id="chat-message-submit">Send</button>
+
+<script>
+    const courseId = "{{ course.id }}";
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + courseId + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        document.querySelector('#chat-log').innerHTML += `<p><b>${data.user}:</b> ${data.message}</p>`;
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInput = document.querySelector('#chat-message-input');
+        chatSocket.send(JSON.stringify({
+            'message': messageInput.value
+        }));
+        messageInput.value = '';
+    };
+</script>

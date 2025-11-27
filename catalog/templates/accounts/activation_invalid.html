@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Invalid Link{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="alert alert-danger p-4">
+        <h2>⚠️ Invalid or Expired Link</h2>
+        <p>Your account activation link is invalid or has expired.</p>
+        <a href="{% url 'resend_activation' %}" class="btn btn-warning mt-3">Resend Link</a>
+    </div>
+</div>
+{% endblock %}

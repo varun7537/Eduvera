@@ -1,0 +1,79 @@
+{% load breadcrumbs %}
+{% load custom_tags %}  {# assuming you have is_enrolled filter in custom_tags.py #}
+
+{% breadcrumbs course=lesson.course lesson=lesson %}
+
+<div class="lesson-header mb-5">
+
+    <!-- Action Buttons Row -->
+    <div class="lesson-actions d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+
+        <div class="d-flex flex-wrap gap-3">
+            <!-- Take Notes Button -->
+            <a href="{% url 'lesson_notes' lesson.id %}" class="btn btn-info btn-lg">
+                <i class="bi bi-journal-text"></i> Take Notes 📓
+            </a>
+
+            <!-- Generate AI Quiz (Staff Only) -->
+            {% if user.is_staff %}
+                <form method="post" action="{% url 'generate_quiz_from_lesson' lesson.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-magic"></i> Generate AI Quiz
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+
+        <!-- Bookmark Toggle (Right side) - Only for authenticated users -->
+        {% if user.is_authenticated %}
+            <div class="btn-group">
+                {% if lesson.lessonbookmark_set.filter(user=user).exists %}
+                    <a href="{% url 'toggle_bookmark' lesson.id %}" class="btn btn-warning">
+                        <i class="bi bi-bookmark-fill"></i> Bookmarked
+                    </a>
+                {% else %}
+                    <a href="{% url 'toggle_bookmark' lesson.id %}" class="btn btn-outline-success">
+                        <i class="bi bi-bookmark"></i> Bookmark Lesson
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Video Player Section - Only for enrolled authenticated users -->
+    {% if user.is_authenticated and user|is_enrolled:course %}
+        <div class="ratio ratio-16x9 bg-dark rounded shadow-sm overflow-hidden">
+            <video 
+                controls 
+                controlsList="nodownload" 
+                disablePictureInPicture 
+                class="w-100"
+                poster="{% if lesson.thumbnail %}{{ STUDIES_MEDIA_URL }}{{ lesson.thumbnail }}{% endif %}">
+                
+                <source src="{% url 'stream_video_with_token' lesson.video_token %}" type="video/mp4">
+                
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        {# Optional: fallback link if token generation is separate #}
+        {# <p class="mt-3 text-center">
+            <a href="{% url 'get_video_token' lesson.id %}" class="btn btn-outline-primary">
+                <i class="bi bi-play-circle"></i> Reload Video Stream
+            </a>
+        </p> #}
+    {% else %}
+        <!-- Not enrolled or not logged in -->
+        <div class="alert alert-info text-center py-5">
+            <h4><i class="bi bi-lock-fill"></i> Video Locked</h4>
+            <p>You need to be enrolled in this course to watch the video.</p>
+            {% if not user.is_authenticated %}
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-success">Login to Enroll</a>
+            {% else %}
+                <a href="{% url 'course_detail' lesson.course.slug %}" class="btn btn-success">En34roll Now</a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+</div>

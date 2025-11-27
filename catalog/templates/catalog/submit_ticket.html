@@ -1,0 +1,810 @@
+{% extends 'catalog/base.html' %}
+{% load widget_tweaks %}
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #2D6CDF;
+        --dark-blue: #1B4F9C;
+        --light-bg: #F5F7FC;
+        --border-gray: #DADDE5;
+        --text-dark: #2E2E2E;
+        --accent-yellow: #FFC947;
+        --accent-green: #00C9A7;
+        --white: #ffffff;
+        --shadow-sm: 0 2px 8px rgba(45, 108, 223, 0.08);
+        --shadow-md: 0 4px 16px rgba(45, 108, 223, 0.12);
+        --shadow-lg: 0 8px 24px rgba(45, 108, 223, 0.16);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--light-bg);
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        color: var(--text-dark);
+        line-height: 1.6;
+    }
+
+    .contact-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+    }
+
+    .contact-card {
+        background: var(--white);
+        border-radius: 16px;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        max-width: 720px;
+        width: 100%;
+        transform: translateY(0);
+        opacity: 1;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+        color: var(--white);
+        padding: 40px 32px;
+        text-align: center;
+        position: relative;
+    }
+
+    .card-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-yellow) 0%, var(--accent-green) 100%);
+    }
+
+    .support-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        backdrop-filter: blur(10px);
+        animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .card-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+    }
+
+    .card-subtitle {
+        font-size: 15px;
+        opacity: 0.9;
+        font-weight: 400;
+    }
+
+    .card-body {
+        padding: 40px 32px;
+    }
+
+    .support-info {
+        background: var(--light-bg);
+        border: 1px solid var(--border-gray);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 32px;
+    }
+
+    .support-info h5 {
+        color: var(--text-dark);
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: var(--white);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .contact-item:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .contact-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .contact-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .contact-item strong {
+        display: block;
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+
+    .contact-item small {
+        color: #6B7280;
+        font-size: 13px;
+    }
+
+    .alert {
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        border: none;
+        animation: slideDown 0.4s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, var(--accent-green), #00B494);
+        color: var(--white);
+    }
+
+    .alert-success::before {
+        content: '✓';
+        font-size: 20px;
+        font-weight: bold;
+        width: 28px;
+        height: 28px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .alert-danger {
+        background: #FEE2E2;
+        color: #991B1B;
+        border-left: 4px solid #DC2626;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+        animation: fadeInLeft 0.5s ease-out backwards;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.15s; }
+    .form-group:nth-child(3) { animation-delay: 0.2s; }
+    .form-group:nth-child(4) { animation-delay: 0.25s; }
+    .form-group:nth-child(5) { animation-delay: 0.3s; }
+    .form-group:nth-child(6) { animation-delay: 0.35s; }
+
+    @keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.3s ease;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        border: 2px solid var(--border-gray);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        background: var(--white);
+        color: var(--text-dark);
+        font-family: inherit;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 4px rgba(45, 108, 223, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #9CA3AF;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .form-select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%232E2E2E' d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 40px;
+    }
+
+    .char-counter {
+        font-size: 13px;
+        color: #6B7280;
+        text-align: right;
+        margin-top: 6px;
+        transition: color 0.3s ease;
+    }
+
+    .char-counter.warning {
+        color: #D97706;
+    }
+
+    .char-counter.error {
+        color: #DC2626;
+    }
+
+    .text-danger {
+        color: #DC2626;
+        font-size: 13px;
+        margin-top: 6px;
+        display: block;
+        animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+
+    .btn-primary {
+        width: 100%;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 16px 32px;
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--white);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        margin-top: 8px;
+    }
+
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-primary.loading .btn-text::after {
+        content: '';
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        margin-left: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--white);
+        animation: spin 0.8s linear infinite;
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(245, 247, 252, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(4px);
+    }
+
+    .loading-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid var(--border-gray);
+        border-top: 4px solid var(--primary-blue);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .loading-text {
+        margin-top: 16px;
+        color: var(--text-dark);
+        font-weight: 500;
+        font-size: 15px;
+    }
+
+    .is-invalid {
+        border-color: #DC2626 !important;
+        animation: shake 0.4s ease;
+    }
+
+    .priority-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 8px;
+        animation: scaleIn 0.3s ease;
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .priority-low { 
+        background: #D1FAE5; 
+        color: #065F46; 
+    }
+
+    .priority-medium { 
+        background: #FEF3C7; 
+        color: #92400E; 
+    }
+
+    .priority-high { 
+        background: #FEE2E2; 
+        color: #991B1B; 
+    }
+
+    @media (max-width: 768px) {
+        .contact-container {
+            padding: 30px 16px;
+        }
+
+        .card-header {
+            padding: 32px 24px;
+        }
+
+        .card-body {
+            padding: 32px 24px;
+        }
+
+        .card-title {
+            font-size: 24px;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+        }
+
+        .support-info {
+            padding: 20px;
+        }
+
+        .contact-item {
+            padding: 10px;
+        }
+
+        .form-control, .form-select {
+            padding: 11px 14px;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            padding: 14px 28px;
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .contact-container {
+            padding: 20px 12px;
+        }
+
+        .card-header {
+            padding: 28px 20px;
+        }
+
+        .card-body {
+            padding: 28px 20px;
+        }
+
+        .card-title {
+            font-size: 22px;
+        }
+
+        .support-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 28px;
+        }
+
+        .support-info {
+            padding: 16px;
+        }
+
+        .contact-item {
+            flex-direction: row;
+            padding: 8px;
+        }
+
+        .contact-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+    }
+
+    .form-group.focused .form-label {
+        color: var(--primary-blue);
+    }
+
+    .btn-close {
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+        margin-left: auto;
+    }
+
+    .btn-close:hover {
+        opacity: 1;
+    }
+
+    .alert-dismissible {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+</style>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="text-center">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Submitting your request...</div>
+    </div>
+</div>
+
+<div class="contact-container">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="card contact-card">
+                    <div class="card-header">
+                        <div class="support-icon">🎧</div>
+                        <h2 class="card-title">Contact Support</h2>
+                        <p class="card-subtitle">We're here to help you 24/7</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="support-info">
+                            <h5>📞 Need Immediate Help?</h5>
+                            <div class="contact-item">
+                                <div class="contact-icon">📧</div>
+                                <div>
+                                    <strong>Email:</strong> support@company.com<br>
+                                    <small>Response within 2-4 hours</small>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-icon">💬</div>
+                                <div>
+                                    <strong>Live Chat:</strong> Available 24/7<br>
+                                    <small>Average response time: 5 minutes</small>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-icon">📱</div>
+                                <div>
+                                    <strong>Phone:</strong> +1 (555) 123-4567<br>
+                                    <small>Mon-Fri: 9AM-6PM EST</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible">
+                                    <div class="alert-content">{{ message }}</div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">&times;</button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <form method="post" novalidate id="contactForm">
+                            {% csrf_token %}
+                            
+                            {% for field in form %}
+                                <div class="form-group">
+                                    <label for="{{ field.id_for_label }}" class="form-label">
+                                        {% if field.name == 'name' %}👤
+                                        {% elif field.name == 'email' %}📧
+                                        {% elif field.name == 'subject' %}📝
+                                        {% elif field.name == 'priority' %}🏷️
+                                        {% elif field.name == 'category' %}📂
+                                        {% elif field.name == 'message' %}💬
+                                        {% endif %}
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    
+                                    {% if field.name == 'name' %}
+                                        {{ field|add_class:"form-control"|attr:"placeholder:Enter your full name" }}
+                                    {% elif field.name == 'email' %}
+                                        {{ field|add_class:"form-control"|attr:"placeholder:Enter your email address" }}
+                                    {% elif field.name == 'subject' %}
+                                        {{ field|add_class:"form-control"|attr:"placeholder:Brief description of your issue" }}
+                                    {% elif field.name == 'message' %}
+                                        {{ field|add_class:"form-control"|attr:"placeholder:Please describe your issue in detail..." }}
+                                    {% elif field.name == 'priority' or field.name == 'category' %}
+                                        {{ field|add_class:"form-select" }}
+                                    {% else %}
+                                        {{ field|add_class:"form-control" }}
+                                    {% endif %}
+                                    
+                                    {% if field.name == 'message' %}
+                                        <div class="char-counter" id="charCounter">
+                                            <span id="charCount">0</span> / 1000 characters
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if field.errors %}
+                                        <div class="text-danger">
+                                            {% for error in field.errors %}<small>{{ error }}</small>{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if field.help_text %}
+                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <span class="btn-text">🚀 Submit Support Request</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const messageField = document.querySelector('textarea[name="message"]');
+    const charCount = document.getElementById('charCount');
+    const charCounter = document.getElementById('charCounter');
+    
+    if (messageField && charCount) {
+        messageField.addEventListener('input', function() {
+            const count = this.value.length;
+            charCount.textContent = count;
+            
+            if (count > 900) {
+                charCounter.className = 'char-counter error';
+            } else if (count > 750) {
+                charCounter.className = 'char-counter warning';
+            } else {
+                charCounter.className = 'char-counter';
+            }
+        });
+        
+        const initialCount = messageField.value.length;
+        charCount.textContent = initialCount;
+    }
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        const requiredFields = form.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger';
+            errorDiv.innerHTML = '<div class="alert-content">Please fill in all required fields.</div>';
+            form.insertBefore(errorDiv, form.firstChild);
+            
+            setTimeout(() => errorDiv.remove(), 4000);
+            
+            return;
+        }
+        
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+        
+        setTimeout(() => loadingOverlay.classList.add('active'), 300);
+    });
+    
+    const inputs = document.querySelectorAll('.form-control, .form-select');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid') && this.value.length > 0) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+    
+    const priorityField = document.querySelector('select[name="priority"]');
+    if (priorityField) {
+        priorityField.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const priority = selectedOption.value.toLowerCase();
+            
+            let badge = this.parentElement.querySelector('.priority-badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                this.parentElement.querySelector('.form-label').appendChild(badge);
+            }
+            
+            badge.textContent = selectedOption.text;
+            badge.className = `priority-badge priority-${priority}`;
+        });
+    }
+    
+    if (messageField) {
+        messageField.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && e.ctrlKey) {
+            form.submit();
+        }
+    });
+    
+    window.addEventListener('beforeunload', function() {
+        loadingOverlay.classList.remove('active');
+    });
+    
+    const closeButtons = document.querySelectorAll('[data-bs-dismiss="alert"]');
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.closest('.alert').style.animation = 'slideDown 0.3s ease reverse';
+            setTimeout(() => this.closest('.alert').remove(), 300);
+        });
+    });
+});
+</script>
+{% endblock %}

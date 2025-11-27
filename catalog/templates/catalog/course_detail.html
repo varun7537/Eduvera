@@ -1,0 +1,1092 @@
+{% extends 'catalog/base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #2D6CDF;
+        --dark-blue: #1B4F9C;
+        --light-bg: #F5F7FC;
+        --border-gray: #DADDE5;
+        --text-dark: #2E2E2E;
+        --accent-yellow: #FFC947;
+        --accent-teal: #00C9A7;
+        --white: #ffffff;
+        --shadow-sm: 0 2px 8px rgba(45, 108, 223, 0.08);
+        --shadow-md: 0 4px 16px rgba(45, 108, 223, 0.12);
+        --shadow-lg: 0 8px 24px rgba(45, 108, 223, 0.16);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--light-bg);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: var(--text-dark);
+        overflow-x: hidden;
+    }
+
+    .course-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    /* Progress Bar */
+    .progress-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-blue), var(--accent-teal));
+        z-index: 9999;
+        transition: width 0.1s ease;
+    }
+
+    /* Header Section */
+    .course-header {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-gray);
+        animation: fadeInDown 0.6s ease;
+    }
+
+    .course-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+    .course-header p {
+        font-size: 1.05rem;
+        color: #666;
+        margin: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid var(--border-gray);
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        animation: fadeInUp 0.6s ease;
+        animation-fill-mode: both;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.instructor { background: rgba(45, 108, 223, 0.1); }
+    .stat-icon.category { background: rgba(255, 201, 71, 0.15); }
+    .stat-icon.duration { background: rgba(0, 201, 167, 0.1); }
+    .stat-icon.level { background: rgba(27, 79, 156, 0.1); }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.1rem;
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+
+    /* Content Section */
+    .content-section {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-gray);
+        animation: fadeInUp 0.6s ease 0.5s both;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--light-bg);
+    }
+
+    .section-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--primary-blue);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-size: 1.1rem;
+        margin-right: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .description-text {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: #555;
+        margin-bottom: 1.5rem;
+    }
+
+    .skills-list {
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .skills-list li {
+        padding: 0.5rem 0;
+        font-size: 1rem;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+    }
+
+    .skills-list li:before {
+        content: '✓';
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background: var(--accent-teal);
+        color: var(--white);
+        border-radius: 50%;
+        text-align: center;
+        line-height: 24px;
+        margin-right: 0.75rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    /* Announcements Section */
+    .announcements-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .announcement-item {
+        background: var(--light-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-gray);
+        border-left: 4px solid var(--primary-blue);
+        transition: var(--transition);
+    }
+
+    .announcement-item:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .announcement-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .announcement-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .announcement-date {
+        font-size: 0.85rem;
+        color: #999;
+        font-weight: 500;
+    }
+
+    .announcement-message {
+        color: #555;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #999;
+    }
+
+    /* Live Classes Section */
+    .live-classes-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .live-class-item {
+        background: var(--light-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-gray);
+        border-left: 4px solid var(--accent-teal);
+        transition: var(--transition);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .live-class-item:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .live-class-info {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .live-class-topic {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .live-class-time {
+        font-size: 0.95rem;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .live-class-time:before {
+        content: '🕐';
+        font-size: 1rem;
+    }
+
+    /* Lesson Cards */
+    .lesson-item {
+        background: var(--light-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-gray);
+        transition: var(--transition);
+    }
+
+    .lesson-item:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .lesson-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+
+    .lesson-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+        flex: 1;
+    }
+
+    .lesson-text {
+        font-size: 0.95rem;
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .lesson-video {
+        width: 100%;
+        max-width: 600px;
+        border-radius: 8px;
+        margin-top: 1rem;
+        border: 1px solid var(--border-gray);
+    }
+
+    .completion-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(0, 201, 167, 0.1);
+        color: var(--accent-teal);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    /* Quiz Cards */
+    .quiz-item {
+        background: var(--light-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-gray);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: var(--transition);
+    }
+
+    .quiz-item:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .quiz-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    /* Review Cards */
+    .review-item {
+        background: var(--light-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-gray);
+        transition: var(--transition);
+    }
+
+    .review-item:hover {
+        box-shadow: var(--shadow-sm);
+    }
+
+    .review-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .review-author {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .review-date {
+        font-size: 0.85rem;
+        color: #999;
+    }
+
+    .review-text {
+        color: #555;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Form Styling */
+    .review-form {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid var(--light-bg);
+    }
+
+    .review-form textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 1rem;
+        border: 1px solid var(--border-gray);
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        resize: vertical;
+        transition: var(--transition);
+    }
+
+    .review-form textarea:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(45, 108, 223, 0.1);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+        margin: 1.5rem 0;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 12px;
+        background: var(--light-bg);
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-teal), var(--primary-blue));
+        border-radius: 6px;
+        transition: width 0.6s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    .progress-label {
+        text-align: center;
+        margin-top: 0.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        margin: 0.5rem 0.25rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        color: var(--white);
+    }
+
+    .btn-primary:hover {
+        background: var(--dark-blue);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--white);
+    }
+
+    .btn-success {
+        background: var(--accent-teal);
+        color: var(--white);
+    }
+
+    .btn-success:hover {
+        background: #00b896;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--white);
+    }
+
+    .btn-warning {
+        background: var(--accent-yellow);
+        color: var(--text-dark);
+    }
+
+    .btn-warning:hover {
+        background: #f5c043;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--text-dark);
+    }
+
+    .btn-secondary {
+        background: var(--light-bg);
+        color: var(--text-dark);
+        border: 1px solid var(--border-gray);
+    }
+
+    .btn-secondary:hover {
+        background: var(--white);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+        color: var(--text-dark);
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin-left: -8px;
+        margin-top: -8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--white);
+        animation: spin 0.6s linear infinite;
+    }
+
+    /* Action Section */
+    .action-section {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-gray);
+        text-align: center;
+        animation: fadeInUp 0.6s ease 0.7s both;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    /* Alert Message */
+    .alert-success {
+        background: rgba(0, 201, 167, 0.1);
+        border: 1px solid var(--accent-teal);
+        color: var(--accent-teal);
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        display: none;
+        animation: slideInDown 0.4s ease;
+    }
+
+    .alert-success.show {
+        display: block;
+    }
+
+    /* Scroll to Top */
+    .scroll-top {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 48px;
+        height: 48px;
+        background: var(--primary-blue);
+        color: var(--white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+        opacity: 0;
+        visibility: hidden;
+        z-index: 1000;
+    }
+
+    .scroll-top.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .scroll-top:hover {
+        transform: translateY(-4px);
+        background: var(--dark-blue);
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInDown {
+        from {
+            transform: translateY(-100%);
+        }
+        to {
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .course-wrapper {
+            padding: 1rem;
+        }
+
+        .course-header {
+            padding: 1.5rem;
+        }
+
+        .course-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .content-section {
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+        }
+
+        .skills-list {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .quiz-item,
+        .live-class-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .announcement-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .scroll-top {
+            bottom: 1rem;
+            right: 1rem;
+            width: 44px;
+            height: 44px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .course-header h1 {
+            font-size: 1.35rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+        }
+
+        .content-section {
+            padding: 1.25rem;
+        }
+    }
+</style>
+
+<div class="progress-indicator" id="progressIndicator"></div>
+
+<div class="course-wrapper">
+    <div class="course-header">
+        <h1>{{ course.title }}</h1>
+        <p>Master the skills you need to succeed</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon instructor">👨‍🏫</div>
+            <div class="stat-label">Instructor</div>
+            <div class="stat-value">{{ course.instructor }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon category">📚</div>
+            <div class="stat-label">Category</div>
+            <div class="stat-value">{{ course.category.name }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon duration">⏱️</div>
+            <div class="stat-label">Duration</div>
+            <div class="stat-value">{{ course.duration|default:"8 weeks" }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon level">📊</div>
+            <div class="stat-label">Level</div>
+            <div class="stat-value">{{ course.level|default:"Beginner" }}</div>
+        </div>
+    </div>
+
+    <!-- Announcements Section -->
+    <div class="content-section">
+        <div class="section-header">
+            <div class="section-icon">📢</div>
+            <h2 class="section-title">Course Announcements</h2>
+        </div>
+        <ul class="announcements-list">
+            {% for ann in announcements %}
+                <li class="announcement-item">
+                    <div class="announcement-header">
+                        <h3 class="announcement-title">{{ ann.title }}</h3>
+                        <span class="announcement-date">{{ ann.created_at|date:"Y-m-d" }}</span>
+                    </div>
+                    <p class="announcement-message">{{ ann.message }}</p>
+                </li>
+            {% empty %}
+                <li class="empty-state">No announcements yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Live Classes Section -->
+    <div class="content-section">
+        <div class="section-header">
+            <div class="section-icon">🎥</div>
+            <h2 class="section-title">Upcoming Live Classes</h2>
+        </div>
+        <ul class="live-classes-list">
+            {% for live in course.live_classes.all %}
+                <li class="live-class-item">
+                    <div class="live-class-info">
+                        <div class="live-class-topic">{{ live.topic }}</div>
+                        <div class="live-class-time">{{ live.start_time|date:"Y-m-d H:i" }}</div>
+                    </div>
+                    {% if enrolled %}
+                        <a href="{{ live.zoom_link }}" target="_blank" class="btn btn-success btn-sm">Join Class</a>
+                    {% endif %}
+                </li>
+            {% empty %}
+                <li class="empty-state">No live classes scheduled.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="content-section">
+        <div class="section-header">
+            <div class="section-icon">📝</div>
+            <h2 class="section-title">Course Description</h2>
+        </div>
+        <div class="description-text">
+            {{ course.description|linebreaksbr }}
+        </div>
+
+        <div class="section-header">
+            <div class="section-icon">⭐</div>
+            <h2 class="section-title">Skills You Will Gain</h2>
+        </div>
+        <ul class="skills-list">
+            {% if course.skills %}
+                {% for skill in course.skills|split_skills %}
+                    <li>{{ skill }}</li>
+                {% empty %}
+                    <li style="color: #999;">No skills listed</li>
+                {% endfor %}
+            {% else %}
+                <li style="color: #999;">No skills listed</li>
+            {% endif %}
+        </ul>
+
+        <div class="section-header">
+            <div class="section-icon">📚</div>
+            <h2 class="section-title">Lessons</h2>
+        </div>
+        {% for lesson in course.lessons.all %}
+            <div class="lesson-item">
+                <div class="lesson-header">
+                    <h3 class="lesson-title">{{ lesson.title }}</h3>
+                    {% if user.is_authenticated %}
+                        {% with progress=lesson_progress|get_item:lesson.id %}
+                            {% if progress and progress.completed %}
+                                <span class="completion-badge">✓ Completed</span>
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
+                </div>
+                <p class="lesson-text">{{ lesson.content|linebreaksbr }}</p>
+                {% if lesson.video %}
+                    <video class="lesson-video" controls>
+                        <source src="{% url 'stream_video' lesson.id %}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
+                {% if user.is_authenticated %}
+                    {% with progress=lesson_progress|get_item:lesson.id %}
+                        {% if not progress or not progress.completed %}
+                            <form action="{% url 'mark_lesson_complete' lesson.id %}" method="post" class="lesson-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm">Mark as Complete</button>
+                            </form>
+                        {% endif %}
+                    {% endwith %}
+                {% endif %}
+            </div>
+        {% empty %}
+            <div class="lesson-item">
+                <p class="lesson-text" style="color: #999; margin: 0;">No lessons available yet</p>
+            </div>
+        {% endfor %}
+
+        <div class="section-header">
+            <div class="section-icon">❓</div>
+            <h2 class="section-title">Quizzes</h2>
+        </div>
+        {% for quiz in course.quizzes.all %}
+            <div class="quiz-item">
+                <h3 class="quiz-title">{{ quiz.title }}</h3>
+                <a href="{% url 'take_quiz' quiz.id %}" class="btn btn-primary btn-sm">Take Quiz</a>
+            </div>
+        {% empty %}
+            <div class="quiz-item">
+                <p class="quiz-title" style="color: #999; margin: 0;">No quizzes available yet</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="content-section">
+        <div class="section-header">
+            <div class="section-icon">💬</div>
+            <h2 class="section-title">Reviews</h2>
+        </div>
+        {% for review in reviews %}
+            <div class="review-item">
+                <div class="review-meta">
+                    <span class="review-author">{{ review.user.username }}</span>
+                    <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+                </div>
+                <p class="review-text">{{ review.comment }}</p>
+            </div>
+        {% empty %}
+            <div class="review-item">
+                <p class="review-text" style="color: #999; margin: 0;">No reviews yet. Be the first to review!</p>
+            </div>
+        {% endfor %}
+
+        {% if user.is_authenticated %}
+            <div class="review-form">
+                <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 1rem;">Leave a Review</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Post Review</button>
+                </form>
+            </div>
+        {% else %}
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="{% url 'login' %}" class="btn btn-primary">Login to Leave a Review</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="action-section">
+        <div class="alert-success" id="successAlert">
+            🎉 Enrollment successful! Welcome to the course.
+        </div>
+
+        {% if user.is_authenticated %}
+            {% if enrolled %}
+                <div class="progress-container">
+                    <h3 class="section-title" style="font-size: 1.2rem; margin-bottom: 1rem;">Course Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ progress }}%;"></div>
+                    </div>
+                    <div class="progress-label">{{ progress }}% Complete</div>
+                </div>
+            {% endif %}
+
+            <div class="action-buttons">
+                <form action="{% url 'enroll_course' course.pk %}" method="post" id="enrollForm">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success" id="enrollBtn">
+                        🚀 Enroll Now
+                    </button>
+                </form>
+
+                {% for enrollment in user.enrollment_set.all %}
+                    {% if enrollment.course.id == course.id %}
+                        {% if not enrollment.is_completed %}
+                            <form action="{% url 'mark_completed' course.pk %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-warning">✓ Mark as Completed</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'download_certificate' course.pk %}" class="btn btn-warning">
+                                📜 Download Certificate
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                <a href="{% url 'course_forum' course.pk %}" class="btn btn-primary">
+                    💬 Course Forum
+                </a>
+            </div>
+        {% else %}
+            <p style="margin-bottom: 1.5rem; color: #666;">
+                Sign in to enroll in this course and start learning
+            </p>
+            <div class="action-buttons">
+                <a href="{% url 'login' %}" class="btn btn-primary">Sign In to Enroll</a>
+                <a href="{% url 'course_forum' course.pk %}" class="btn btn-secondary">View Course Forum</a>
+            </div>
+        {% endif %}
+
+        <a href="/" class="btn btn-secondary">← Back to Courses</a>
+    </div>
+</div>
+
+<div class="scroll-top" id="scrollTop">↑</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Progress indicator for scroll
+    const progressIndicator = document.getElementById('progressIndicator');
+    const scrollTop = document.getElementById('scrollTop');
+
+    window.addEventListener('scroll', function() {
+        const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        progressIndicator.style.width = scrolled + '%';
+
+        // Show/hide scroll to top button
+        if (window.scrollY > 300) {
+            scrollTop.classList.add('visible');
+        } else {
+            scrollTop.classList.remove('visible');
+        }
+    });
+
+    // Scroll to top functionality
+    if (scrollTop) {
+        scrollTop.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    // Enrollment form with loading state
+    const enrollForm = document.getElementById('enrollForm');
+    const enrollBtn = document.getElementById('enrollBtn');
+    const successAlert = document.getElementById('successAlert');
+
+    if (enrollForm && enrollBtn) {
+        enrollForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            enrollBtn.classList.add('btn-loading');
+            enrollBtn.disabled = true;
+
+            // Simulate loading, then show success message
+            setTimeout(function() {
+                if (successAlert) {
+                    successAlert.classList.add('show');
+                }
+                setTimeout(function() {
+                    enrollForm.submit();
+                }, 1000);
+            }, 1500);
+        });
+    }
+
+    // Lesson completion forms with loading state
+    const lessonForms = document.querySelectorAll('.lesson-form');
+    lessonForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const btn = form.querySelector('button');
+            if (btn) {
+                btn.classList.add('btn-loading');
+                btn.disabled = true;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

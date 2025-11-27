@@ -1,0 +1,28 @@
+{% extends 'catalog/base.html' %}
+{% load role_tags %}
+{% block content %}
+<h2>Announcements — {{ course.title }}</h2>
+
+{% if user|in_group:'Instructor' and user.id == course.instructor.id %}
+  <p><a href="{% url 'create_announcement' course.id %}">+ New Announcement</a></p>
+{% endif %}
+
+<ul>
+  {% for a in announcements %}
+    <li>
+      <strong>{{ a.title }}</strong>
+      <small> — {{ a.created_at|date:"Y-m-d H:i" }}</small>
+      <p>{{ a.message|linebreaks }}</p>
+
+      {% if user|in_group:'Instructor' and user.id == course.instructor.id %}
+        <a href="{% url 'edit_announcement' course.id a.id %}">Edit</a> |
+        <a href="{% url 'delete_announcement' course.id a.id %}">Delete</a>
+      {% endif %}
+    </li>
+  {% empty %}
+    <li>No announcements yet.</li>
+  {% endfor %}
+</ul>
+
+<p><a href="{% url 'course_detail' course.id %}">Back to course</a></p>
+{% endblock %}

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Learning Catalog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #2D6CDF;
+            --dark-blue: #1B4F9C;
+            --light-bg: #F5F7FC;
+            --gray-border: #DADDE5;
+            --dark-text: #2E2E2E;
+            --yellow: #FFC947;
+            --teal: #00C9A7;
+            --white: #FFFFFF;
+            --shadow-sm: 0 2px 8px rgba(45, 108, 223, 0.08);
+            --shadow-md: 0 4px 16px rgba(45, 108, 223, 0.12);
+            --shadow-lg: 0 8px 24px rgba(45, 108, 223, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--light-bg);
+            color: var(--dark-text);
+            overflow-x: hidden;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        body.loaded { opacity: 1; }
+
+        /* Navbar */
+        .navbar {
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        .navbar.scrolled { box-shadow: var(--shadow-md); }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-blue) !important;
+        }
+        .navbar-brand:hover { color: var(--dark-blue) !important; }
+        .navbar-brand i { color: var(--teal); margin-right: 8px; }
+
+        /* User Rewards */
+        .user-rewards {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--light-bg);
+            border-radius: 50px;
+            margin-right: 12px;
+            font-size: 0.9rem;
+        }
+        .user-points i { color: var(--yellow); }
+        .user-badge {
+            background: linear-gradient(135deg, #00C9A7, #2D6CDF);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Search */
+        .search-container { position: relative; max-width: 450px; margin: 0 auto; }
+        .search-input {
+            background: var(--light-bg);
+            border: 2px solid var(--gray-border);
+            border-radius: 50px;
+            padding: 12px 50px 12px 20px;
+            width: 100%;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(45, 108, 223, 0.1);
+        }
+        .search-btn {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-blue);
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            color: white;
+        }
+        .search-btn:hover { background: var(--dark-blue); }
+
+        /* Nav Links */
+        .nav-link {
+            color: var(--dark-text) !important;
+            font-weight: 500;
+            padding: 8px 16px !important;
+            border-radius: 8px;
+            margin: 0 4px;
+            font-size: 0.95rem;
+        }
+        .nav-link:hover { background: var(--light-bg); color: var(--primary-blue) !important; }
+        .nav-link.btn-logout { background: #ff4757; color: white !important; }
+        .nav-link.btn-logout:hover { background: #ee5a6f; }
+        .nav-link.btn-primary { background: var(--primary-blue); color: white !important; }
+        .nav-link.btn-primary:hover { background: var(--dark-blue); }
+
+        /* Main */
+        .main-container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
+
+        /* Hero */
+        .hero-section { text-align: center; padding: 80px 20px; margin-bottom: 60px; }
+        .hero-title { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; margin-bottom: 20px; }
+        .hero-title span { color: var(--primary-blue); }
+        .hero-subtitle { font-size: 1.15rem; color: #666; max-width: 700px; margin: 0 auto 30px; }
+        .hero-btn {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .hero-btn:hover {
+            background: var(--dark-blue);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Stats */
+        .stats-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 60px; }
+        .stat-card {
+            background: var(--white);
+            padding: 32px 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border-top: 4px solid var(--primary-blue);
+            transition: var(--transition);
+        }
+        .stat-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
+        .stat-number { font-size: 2.8rem; font-weight: 700; color: var(--primary-blue); }
+        .stat-label { font-weight: 500; color: #666; margin-top: 8px; }
+
+        /* Filters */
+        .filter-section { background: var(--white); padding: 24px; border-radius: 12px; margin-bottom: 40px; box-shadow: var(--shadow-sm); }
+        .filter-tabs { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .filter-tab {
+            padding: 10px 28px;
+            background: var(--light-bg);
+            border: none;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .filter-tab:hover { background: #e0e4f0; }
+        .filter-tab.active { background: var(--primary-blue); color: white; }
+
+        /* Course Cards */
+        .section-title { font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 40px; }
+        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 32px; }
+        .course-card {
+            background: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-blue);
+        }
+        .course-image {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+            position: relative;
+        }
+        .course-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--yellow);
+            color: var(--dark-text);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .course-content { padding: 24px; }
+        .course-title { font-size: 1.35rem; font-weight: 600; margin-bottom: 12px; }
+        .course-description { color: #666; font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px; }
+        .course-meta { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid var(--gray-border); margin-bottom: 20px; }
+        .course-price { font-size: 1.6rem; font-weight: 700; color: var(--primary-blue); }
+        .course-rating { color: var(--yellow); }
+        .course-rating span { color: var(--dark-text); margin-left: 6px; font-weight: 600; }
+        .course-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+        .course-info { display: flex; gap: 20px; font-size: 0.9rem; color: #777; }
+        .course-info-item { display: flex; align-items: center; gap: 6px; }
+        .course-btn {
+            background: var(--primary-blue);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .course-btn:hover { background: var(--dark-blue); }
+
+        /* Scroll to Top */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--primary-blue);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: var(--shadow-md);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        .scroll-top.visible { opacity: 1; pointer-events: all; }
+        .scroll-top:hover { background: var(--dark-blue); transform: scale(1.1); }
+
+        /* Footer */
+        .footer {
+            background: var(--white);
+            padding: 60px 20px 30px;
+            margin-top: 100px;
+            border-top: 1px solid var(--gray-border);
+            text-align: center;
+            font-size: 0.95rem;
+            color: #666;
+        }
+        .footer-links { margin-bottom: 20px; }
+        .footer-link { color: var(--dark-text); text-decoration: none; margin: 0 12px; font-weight: 500; }
+        .footer-link:hover { color: var(--primary-blue); }
+
+        /* Animations */
+        .fade-in { opacity: 0; transform: translateY(30px); transition: all 0.7s ease; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            .course-grid { grid-template-columns: 1fr; }
+            .stats-section { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 576px) {
+            .stats-section { grid-template-columns: 1fr; }
+            .course-footer { flex-direction: column; text-align: center; }
+            .course-info { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-graduation-cap"></i>E-Learning
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <form class="d-flex ms-lg-auto me-lg-3 search-container">
+                    <div class="position-relative w-100">
+                        <input class="search-input" type="search" placeholder="Search courses..." aria-label="Search">
+                        <button class="search-btn" type="submit"><i class="fas fa-search"></i></button>
+                    </div>
+                </form>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-th-large"></i> Categories</a></li>
+
+                    <!-- Simulate logged-in user -->
+                    <li class="nav-item d-flex align-items-center">
+                        <div class="user-rewards">
+                            <span class="user-points">
+                                <i class="fas fa-star"></i> 8,420 pts
+                            </span>
+                            <span class="user-badge">Pro Learner</span>
+                        </div>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-user"></i> Profile</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-book-open"></i> My Courses</a></li>
+                    <li class="nav-item"><a class="nav-link btn-logout" href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+
+        <!-- Hero -->
+        <section class="hero-section fade-in">
+            <h1 class="hero-title">Learn <span>Without Limits</span></h1>
+            <p class="hero-subtitle">Discover thousands of courses from world-class instructors and advance your career with cutting-edge skills.</p>
+            <a href="#courses" class="hero-btn">Start Learning Today</a>
+        </section>
+
+        <!-- Stats -->
+        <div class="stats-section fade-in">
+            <div class="stat-card"><div class="stat-number">10K+</div><div class="stat-label">Active Students</div></div>
+            <div class="stat-card" style="border-top-color:var(--teal)"><div class="stat-number" style="color:var(--teal)">500+</div><div class="stat-label">Expert Instructors</div></div>
+            <div class="stat-card" style="border-top-color:var(--yellow)"><div class="stat-number" style="color:var(--yellow)">1000+</div><div class="stat-label">Course Offerings</div></div>
+            <div class="stat-card" style="border-top-color:var(--dark-blue)"><div class="stat-number" style="color:var(--dark-blue)">95%</div><div class="stat-label">Success Rate</div></div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section fade-in">
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All Courses</button>
+                <button class="filter-tab" data-filter="programming">Programming</button>
+                <button class="filter-tab" data-filter="design">Design</button>
+                <button class="filter-tab" data-filter="business">Business</button>
+                <button class="filter-tab" data-filter="data">Data Science</button>
+            </div>
+        </div>
+
+        <!-- Courses -->
+        <section id="courses">
+            <h2 class="section-title fade-in">Featured Courses</h2>
+            <div class="course-grid">
+                <!-- Course 1 -->
+                <div class="course-card fade-in" data-category="programming">
+                    <div class="course-image" style="background: linear-gradient(135deg, #2D6CDF, #1B4F9C);">
+                        <i class="fab fa-python"></i>
+                        <span class="course-badge">Bestseller</span>
+                    </div>
+                    <div class="course-content">
+                        <h3 class="course-title">Python for Beginners</h3>
+                        <p class="course-description">Master Python programming from scratch with hands-on projects and real-world applications.</p>
+                        <div class="course-meta">
+                            <span class="course-price">$49</span>
+                            <div class="course-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> <span>4.9</span></div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-info">
+                                <div class="course-info-item"><i class="fas fa-clock"></i> 22h 10m</div>
+                                <div class="course-info-item"><i class="fas fa-users"></i> 5.6k</div>
+                            </div>
+                            <a href="#" class="course-btn">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course 2 -->
+                <div class="course-card fade-in" data-category="programming">
+                    <div class="course-image" style="background: linear-gradient(135deg, #FFC947, #d99f00);">
+                        <i class="fab fa-js-square"></i>
+                        <span class="course-badge">Popular</span>
+                    </div>
+                    <div class="course-content">
+                        <h3 class="course-title">JavaScript Mastery</h3>
+                        <p class="course-description">Learn modern JavaScript, ES6+, and build dynamic web applications with confidence.</p>
+                        <div class="course-meta">
+                            <span class="course-price">$59</span>
+                            <div class="course-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> <span>4.8</span></div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-info">
+                                <div class="course-info-item"><i class="fas fa-clock"></i> 12h 15m</div>
+                                <div class="course-info-item"><i class="fas fa-users"></i> 3.2k</div>
+                            </div>
+                            <a href="#" class="course-btn">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course 3 -->
+                <div class="course-card fade-in" data-category="programming">
+                    <div class="course-image" style="background: linear-gradient(135deg, #00C9A7, #00a085);">
+                        <i class="fab fa-react"></i>
+                    </div>
+                    <div class="course-content">
+                        <h3 class="course-title">React Development Bootcamp</h3>
+                        <p class="course-description">Build powerful, interactive user interfaces with React, Hooks, Redux, and modern tools.</p>
+                        <div class="course-meta">
+                            <span class="course-price">$79</span>
+                            <div class="course-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> <span>4.9</span></div>
+                        </div>
+                        <div class="course-footer">
+                            <div class="course-info">
+                                <div class="course-info-item"><i class="fas fa-clock"></i> 15h 45m</div>
+                                <div class="course-info-item"><i class="fas fa-users"></i> 8.1k</div>
+                            </div>
+                            <a href="#" class="course-btn">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scroll to Top -->
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="#" class="footer-link">About</a>
+            <a href="#" class="footer-link">Contact</a>
+            <a href="#" class="footer-link">Privacy Policy</a>
+            <a href="#" class="footer-link">Terms of Service</a>
+        </div>
+        <p>&copy; 2025 E-Learning. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Page load
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            document.querySelector('.navbar').classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Fade-in animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Filter functionality
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const filter = tab.getAttribute('data-filter');
+                document.querySelectorAll('.course-card').forEach(card => {
+                    if (filter === 'all' || card.getAttribute('data-category') === filter) {
+                        card.style.display = 'block';
+                        setTimeout(() => card.style.opacity = 1, 100);
+                    } else {
+                        card.style.opacity = 0;
+                        setTimeout(() => card.style.display = 'none', 300);
+                    }
+                });
+            });
+        });
+
+        // Scroll to top
+        const scrollTopBtn = document.getElementById('scrollTop');
+        window.addEventListener('scroll', () => {
+            scrollTopBtn.classList.toggle('visible', window.scrollY > 500);
+        });
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

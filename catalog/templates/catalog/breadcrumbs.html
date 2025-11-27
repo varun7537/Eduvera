@@ -1,0 +1,12 @@
+<nav>
+  <a href="/">Home</a>
+  {% if course %}
+    › <a href="{% url 'course_detail' course.id %}">{{ course.title }}</a>
+  {% endif %}
+  {% if module %}
+    › <span>{{ module.title }}</span>
+  {% endif %}
+  {% if lesson %}
+    › <span>{{ lesson.title }}</span>
+  {% endif %}
+</nav>

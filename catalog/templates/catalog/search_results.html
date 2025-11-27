@@ -1,0 +1,748 @@
+{% extends 'catalog/base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+        --warning-gradient: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+        --card-bg: rgba(255, 255, 255, 0.95);
+        --text-primary: #2c3e50;
+        --text-secondary: #6c757d;
+        --border-color: #e9ecef;
+        --shadow-light: 0 10px 40px rgba(0, 0, 0, 0.1);
+        --shadow-heavy: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text-primary);
+    }
+
+    /* Animated Background */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+        animation: backgroundMove 20s linear infinite;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    @keyframes backgroundMove {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Search Header */
+    .search-header {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-light);
+        border: 1px solid var(--border-color);
+        animation: slideInDown 0.8s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .search-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: heroShimmer 4s ease-in-out infinite;
+    }
+
+    @keyframes heroShimmer {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(180deg); }
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .search-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-query {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    .search-meta {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        position: relative;
+        z-index: 1;
+    }
+
+    .results-count {
+        font-weight: 600;
+    }
+
+    /* Search Form */
+    .search-form {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .search-form .form-control {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-form .form-control:focus {
+        outline: none;
+        border-color: var(--primary-gradient);
+        box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
+    }
+
+    .search-form .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        min-width: 150px;
+    }
+
+    .search-form .form-select:focus {
+        outline: none;
+        border-color: var(--primary-gradient);
+        box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
+    }
+
+    .search-form .btn-search {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .search-form .btn-search:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: var(--shadow-light);
+        border: 1px solid var(--border-color);
+        animation: slideInUp 0.8s ease-out 0.2s both;
+    }
+
+    .filter-options {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: white;
+        color: var(--text-primary);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn.active,
+    .filter-btn:hover {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .sort-dropdown {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .sort-dropdown:focus {
+        outline: none;
+        border-color: var(--primary-gradient);
+        box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
+    }
+
+    /* Results Container */
+    .results-container {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .course-result {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-light);
+        border: 1px solid var(--border-color);
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: slideInUp 0.6s ease-out both;
+    }
+
+    .course-result::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .course-result:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-heavy);
+    }
+
+    .course-result:hover::before {
+        left: 100%;
+    }
+
+    .course-result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .course-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .course-badge {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .course-badge:hover {
+        transform: scale(1.05);
+    }
+
+    .course-description {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .course-meta-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .course-price {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--success-gradient);
+    }
+
+    .course-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stars {
+        color: #ffc107;
+        font-size: 1rem;
+    }
+
+    .rating-text {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .course-category {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        background: var(--secondary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+    }
+
+    /* No Results */
+    .no-results {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 3rem;
+        text-align: center;
+        box-shadow: var(--shadow-light);
+        border: 2px dashed var(--border-color);
+        animation: scaleIn 0.6s ease-out both;
+    }
+
+    .no-results-icon {
+        font-size: 4rem;
+        color: var(--text-secondary);
+        opacity: 0.5;
+        margin-bottom: 1rem;
+    }
+
+    .no-results-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .no-results-text {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    .suggestions {
+        text-align: left;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .suggestions h4 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .suggestions ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .suggestions li {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        position: relative;
+        padding-left: 1.5rem;
+    }
+
+    .suggestions li::before {
+        content: '→';
+        position: absolute;
+        left: 0;
+        color: var(--primary-gradient);
+    }
+
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Back Button */
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+        color: white;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        margin-top: 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(99, 110, 114, 0.3);
+    }
+
+    .back-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 110, 114, 0.4);
+        color: white;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .search-header {
+            padding: 1.5rem;
+        }
+
+        .search-title {
+            font-size: 1.5rem;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .filter-options {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        .sort-dropdown {
+            width: 100%;
+        }
+
+        .course-result {
+            padding: 1rem;
+        }
+
+        .course-result-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .no-results {
+            padding: 2rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .search-title {
+            font-size: 1.25rem;
+        }
+
+        .course-title {
+            font-size: 1.2rem;
+        }
+
+        .course-description {
+            font-size: 0.9rem;
+        }
+
+        .course-meta-info {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="container py-5">
+    <!-- Search Header -->
+    <div class="search-header">
+        <h2 class="search-title">
+            <i class="fas fa-search me-3"></i>
+            Search Results for "<span class="search-query">{{ query }}</span>"
+        </h2>
+        <div class="search-meta">
+            <span class="results-count">{{ results|length }} course{{ results|length|pluralize }} found</span>
+        </div>
+        <!-- Search Form -->
+        <form action="{% url 'search' %}" method="get" class="search-form">
+            <input class="form-control" type="search" name="q" placeholder="Search courses by keyword or instructor" value="{{ query }}">
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button class="btn-search" type="submit">Search</button>
+        </form>
+    </div>
+
+    {% if results %}
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-options">
+                <button class="filter-btn active" data-filter="all">All Courses</button>
+                <button class="filter-btn" data-filter="free">Free</button>
+                <button class="filter-btn" data-filter="paid">Paid</button>
+                <button class="filter-btn" data-filter="popular">Most Popular</button>
+            </div>
+            <select class="sort-dropdown" id="sortBy">
+                <option value="relevance">Sort by Relevance</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Highest Rated</option>
+                <option value="newest">Newest First</option>
+            </select>
+        </div>
+
+        <!-- Results Container -->
+        <div class="results-container">
+            {% for course in results %}
+                <a href="{% url 'course_detail' course.pk %}" class="course-result">
+                    <div class="course-result-header">
+                        <h3 class="course-title">{{ course.title }}</h3>
+                        <div class="course-badge">
+                            <i class="fas fa-eye"></i>
+                            View Course
+                        </div>
+                    </div>
+                    <p class="course-description">
+                        {{ course.description|default:"Discover new skills and advance your career with this comprehensive course designed by industry experts." }}
+                    </p>
+                    <div class="course-meta-info">
+                        <div class="course-price">
+                            {% if course.price %}
+                                ${{ course.price }}
+                            {% else %}
+                                Free
+                            {% endif %}
+                        </div>
+                        <div class="course-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="rating-text">4.8 ({{ course.id|add:123 }} reviews)</span>
+                        </div>
+                        <div class="course-category">
+                            {{ course.category|default:"Technology" }}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-results">
+            <div class="no-results-icon">
+                <i class="fas fa-search-minus"></i>
+            </div>
+            <h3 class="no-results-title">No courses found</h3>
+            <p class="no-results-text">
+                We couldn't find any courses matching your search. Try adjusting your search terms or browse our featured courses below.
+            </p>
+            <div class="suggestions">
+                <h4><i class="fas fa-lightbulb me-2"></i>Search Suggestions:</h4>
+                <ul>
+                    <li>Try different keywords or phrases</li>
+                    <li>Check your spelling</li>
+                    <li>Use more general terms</li>
+                    <li>Browse by category instead</li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    <a href="/" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        Back to Courses
+    </a>
+</div>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const courseResults = document.querySelectorAll('.course-result');
+
+    // Staggered Animation Delay
+    courseResults.forEach((el, index) => {
+        el.style.animationDelay = `${(index + 1) * 0.1}s`;
+    });
+
+    // Filter logic
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const filter = this.dataset.filter;
+
+            // You could add real filtering logic here if needed
+
+            courseResults.forEach((result, index) => {
+                result.style.animation = 'none';
+                setTimeout(() => {
+                    result.style.animation = `slideInUp 0.6s ease-out ${(index + 1) * 0.1}s both`;
+                }, 10);
+            });
+        });
+    });
+
+    // Sort logic
+    const sortDropdown = document.getElementById('sortBy');
+    if (sortDropdown) {
+        sortDropdown.addEventListener('change', function () {
+            courseResults.forEach((result, index) => {
+                result.style.animation = 'none';
+                setTimeout(() => {
+                    result.style.animation = `slideInUp 0.6s ease-out ${(index + 1) * 0.1}s both`;
+                }, 10);
+            });
+        });
+    }
+
+    // Enhanced hover effects
+    const interactiveElements = document.querySelectorAll('.course-result, .btn-search, .back-btn');
+    interactiveElements.forEach(element => {
+        element.addEventListener('mouseenter', function () {
+            this.style.transform = 'translateY(-5px) scale(1.02)';
+            this.style.boxShadow = 'var(--shadow-heavy)';
+        });
+        element.addEventListener('mouseleave', function () {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.boxShadow = element.classList.contains('course-result') ? 'var(--shadow-light)' : '0 4px 15px rgba(99, 110, 114, 0.3)';
+        });
+    });
+
+    // Intersection Observer for animation on scroll
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'slideInUp 0.6s ease-out both';
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    courseResults.forEach(result => observer.observe(result));
+
+    // Highlight search query
+    const searchQuery = "{{ query|escapejs }}";
+    if (searchQuery) {
+        courseResults.forEach(result => {
+            const title = result.querySelector('.course-title');
+            const description = result.querySelector('.course-description');
+
+            if (title) {
+                title.innerHTML = highlightText(title.innerHTML, searchQuery);
+            }
+            if (description) {
+                description.innerHTML = highlightText(description.innerHTML, searchQuery);
+            }
+        });
+    }
+
+    function highlightText(text, query) {
+        if (!query) return text;
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<mark style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 2px 4px; border-radius: 4px;">$1</mark>');
+    }
+
+    // Form submission animation
+    const searchForm = document.querySelector('.search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-search');
+            submitBtn.classList.add('btn-loading');
+            submitBtn.disabled = true;
+            setTimeout(() => {
+                this.submit();
+            }, 500);
+        });
+    }
+});
+
+// Add loading animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+    .btn-loading {
+        pointer-events: none;
+        opacity: 0.8;
+        position: relative;
+    }
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

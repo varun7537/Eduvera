@@ -1,0 +1,770 @@
+{% extends 'catalog/base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    :root {
+        --primary: #2D6CDF;
+        --primary-dark: #1B4F9C;
+        --bg-light: #F5F7FC;
+        --border: #DADDE5;
+        --text-dark: #2E2E2E;
+        --accent-yellow: #FFC947;
+        --accent-green: #00C9A7;
+        --white: #ffffff;
+        --shadow-sm: 0 2px 8px rgba(45, 108, 223, 0.08);
+        --shadow-md: 0 4px 16px rgba(45, 108, 223, 0.12);
+        --shadow-lg: 0 8px 24px rgba(45, 108, 223, 0.16);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--bg-light);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        color: var(--text-dark);
+        line-height: 1.6;
+    }
+
+    .discussion-container {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .discussion-header {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border-left: 4px solid var(--primary);
+        animation: fadeSlideDown 0.5s ease-out;
+    }
+
+    @keyframes fadeSlideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .discussion-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .course-name {
+        color: var(--text-dark);
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .course-name strong {
+        color: var(--primary-dark);
+    }
+
+    .discussion-stats {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--text-dark);
+        transition: transform 0.2s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-2px);
+    }
+
+    .stat-item span:first-child {
+        color: #7a7a7a;
+    }
+
+    .stat-item span:last-child {
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .new-post-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border-left: 4px solid var(--accent-green);
+        animation: fadeSlideUp 0.5s ease-out 0.1s backwards;
+    }
+
+    @keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+        background: var(--white);
+        font-family: inherit;
+        resize: vertical;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(45, 108, 223, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #999;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+
+    .mt-1 {
+        margin-top: 0.25rem;
+    }
+
+    .mt-2 {
+        margin-top: 0.5rem;
+    }
+
+    .mt-3 {
+        margin-top: 1rem;
+    }
+
+    .text-danger {
+        color: #dc3545;
+    }
+
+    .text-danger small {
+        font-size: 0.8125rem;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.625rem 1.5rem;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: var(--white);
+        box-shadow: 0 2px 8px rgba(45, 108, 223, 0.2);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(45, 108, 223, 0.3);
+    }
+
+    .btn-primary:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .btn-outline-secondary {
+        background: transparent;
+        border: 2px solid var(--border);
+        color: var(--text-dark);
+    }
+
+    .btn-outline-secondary:hover:not(:disabled) {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: var(--white);
+        transform: translateY(-2px);
+    }
+
+    .btn.loading {
+        pointer-events: none;
+        color: transparent;
+    }
+
+    .btn.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 18px;
+        height: 18px;
+        margin: -9px 0 0 -9px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--white);
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .posts-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .post-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+        animation: fadeIn 0.4s ease-out backwards;
+        border-left: 4px solid var(--primary);
+    }
+
+    .post-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-3px);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .post-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        gap: 1rem;
+    }
+
+    .post-author {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .author-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: var(--white);
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .author-info h6 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 0.9375rem;
+    }
+
+    .author-info small {
+        font-size: 0.8125rem;
+        color: #7a7a7a;
+    }
+
+    .text-muted {
+        color: #7a7a7a;
+    }
+
+    .post-time {
+        font-size: 0.8125rem;
+        color: #7a7a7a;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .post-content {
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        color: var(--text-dark);
+        margin-bottom: 1.25rem;
+    }
+
+    .replies-section {
+        border-top: 1px solid var(--border);
+        padding-top: 1.25rem;
+        margin-top: 1.25rem;
+    }
+
+    .replies-header {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+        font-size: 0.9375rem;
+    }
+
+    .reply-item {
+        background: var(--bg-light);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        margin-left: 1.5rem;
+        position: relative;
+        transition: all 0.2s ease;
+        animation: slideIn 0.3s ease-out backwards;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .reply-item:hover {
+        background: #e8ecf7;
+        transform: translateX(4px);
+    }
+
+    .reply-item::before {
+        content: '';
+        position: absolute;
+        left: -1.5rem;
+        top: 1.25rem;
+        width: 1rem;
+        height: 2px;
+        background: var(--border);
+    }
+
+    .reply-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .reply-author {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .reply-content {
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: var(--text-dark);
+    }
+
+    .reply-form {
+        background: var(--bg-light);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        border: 1px solid var(--border);
+    }
+
+    .reply-textarea {
+        min-height: 80px;
+    }
+
+    .no-posts-message {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        border: 2px dashed var(--border);
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .no-posts-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--primary);
+    }
+
+    .no-posts-message h3 {
+        font-size: 1.5rem;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .no-posts-message p {
+        color: #7a7a7a;
+        font-size: 0.9375rem;
+    }
+
+    .back-button {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: var(--primary);
+        color: var(--white);
+        border: none;
+        border-radius: 50%;
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 16px rgba(45, 108, 223, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        animation: slideInUp 0.5s ease-out 0.3s backwards;
+    }
+
+    .back-button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgba(45, 108, 223, 0.4);
+    }
+
+    .success-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent-green);
+        margin-right: 0.5rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.5;
+            transform: scale(0.9);
+        }
+    }
+
+    .small {
+        font-size: 0.8125rem;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .discussion-container {
+            padding: 1rem;
+        }
+
+        .discussion-header,
+        .new-post-card,
+        .post-card {
+            padding: 1.25rem;
+        }
+
+        .discussion-title {
+            font-size: 1.5rem;
+        }
+
+        .discussion-stats {
+            gap: 1rem;
+        }
+
+        .post-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .reply-item {
+            margin-left: 1rem;
+        }
+
+        .reply-item::before {
+            left: -1rem;
+            width: 0.75rem;
+        }
+
+        .back-button {
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 50px;
+            height: 50px;
+            font-size: 0.8125rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .discussion-container {
+            padding: 0.75rem;
+        }
+
+        .discussion-header,
+        .new-post-card,
+        .post-card {
+            padding: 1rem;
+        }
+
+        .discussion-title {
+            font-size: 1.375rem;
+        }
+
+        .form-control {
+            font-size: 0.875rem;
+            padding: 0.625rem 0.875rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+        }
+
+        .reply-item {
+            margin-left: 0.75rem;
+        }
+
+        .reply-form {
+            padding: 0.875rem;
+        }
+
+        .stat-item {
+            font-size: 0.8125rem;
+        }
+
+        .back-button {
+            bottom: 1rem;
+            right: 1rem;
+            width: 48px;
+            height: 48px;
+        }
+    }
+
+    .form-control:invalid:not(:placeholder-shown) {
+        border-color: #dc3545;
+    }
+
+    .form-control:valid:not(:placeholder-shown) {
+        border-color: var(--accent-green);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+
+<div class="discussion-container">
+    <div class="discussion-header">
+        <h1 class="discussion-title">Discussion Forum</h1>
+        <p class="course-name">Course: <strong>{{ course.title }}</strong></p>
+        <div class="discussion-stats">
+            <div class="stat-item">
+                <span>Posts:</span>
+                <span>{{ posts.count }}</span>
+            </div>
+            <div class="stat-item">
+                <span>Replies:</span>
+                <span>{{ total_replies|default:0 }}</span>
+            </div>
+            <div class="stat-item">
+                <span>Active Users:</span>
+                <span>{{ active_users|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="new-post-card">
+        <h3 class="form-title">Start a New Discussion</h3>
+        <form method="post" id="newPostForm">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="mb-3">
+                <label for="{{ form.content.id_for_label }}" class="form-label">Your Message</label>
+                <textarea 
+                    name="{{ form.content.name }}" 
+                    id="{{ form.content.id_for_label }}"
+                    class="form-control" 
+                    rows="5" 
+                    placeholder="Share your thoughts, ask questions, or start a discussion..."
+                    required>{{ form.content.value|default:'' }}</textarea>
+                {% if form.content.errors %}
+                    <div class="text-danger mt-1">
+                        {% for error in form.content.errors %}
+                            <small>{{ error }}</small><br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary" id="postBtn">
+                <span>Post Message</span>
+            </button>
+        </form>
+    </div>
+
+    <div class="posts-container">
+        {% for post in posts %}
+            <div class="post-card" style="animation-delay: {{ forloop.counter0|divisibleby:20 }}00ms;">
+                <div class="post-header">
+                    <div class="post-author">
+                        <div class="author-avatar">
+                            {{ post.user.username|slice:":1"|upper }}
+                        </div>
+                        <div class="author-info">
+                            <h6>{{ post.user.get_full_name|default:post.user.username }}</h6>
+                            <small class="text-muted">
+                                {% if post.user == request.user %}You{% else %}Learner{% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="post-time">
+                        <span>{{ post.created_at|timesince }} ago</span>
+                    </div>
+                </div>
+
+                <div class="post-content">
+                    {{ post.content|linebreaks }}
+                </div>
+
+                <div class="replies-section">
+                    <div class="replies-header">
+                        <span class="success-indicator"></span>Replies ({{ post.replies.count }})
+                    </div>
+
+                    {% for reply in post.replies.all %}
+                        <div class="reply-item" style="animation-delay: {{ forloop.counter0|divisibleby:30 }}00ms;">
+                            <div class="reply-header">
+                                <span class="reply-author">{{ reply.user.get_full_name|default:reply.user.username }}</span>
+                                <span class="text-muted">•</span>
+                                <span class="text-muted small">{{ reply.created_at|timesince }} ago</span>
+                            </div>
+                            <div class="reply-content">
+                                {{ reply.content|linebreaks }}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="reply-item text-center" style="border: 1px dashed var(--border); background: transparent;">
+                            <em class="text-muted">No replies yet. Be the first to respond!</em>
+                        </div>
+                    {% endfor %}
+
+                    <div class="reply-form mt-3">
+                        <form method="post" action="{% url 'reply_to_post' post.id %}" class="reply-form-inner">
+                            {% csrf_token %}
+                            <textarea 
+                                name="content" 
+                                class="form-control reply-textarea" 
+                                rows="3" 
+                                placeholder="Write your reply..."
+                                required></textarea>
+                            <button type="submit" class="btn btn-outline-secondary reply-btn mt-2">
+                                <span>Reply</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="no-posts-message">
+                <div class="no-posts-icon">💬</div>
+                <h3>No discussions yet!</h3>
+                <p class="text-muted">Be the first to start a conversation and engage with fellow learners.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<a href="{% url 'course_detail' course.pk %}" class="back-button" title="Back to Course">←</a>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const submitButtons = document.querySelectorAll('#postBtn, .reply-btn');
+    submitButtons.forEach(btn => {
+        const form = btn.closest('form');
+        form.addEventListener('submit', function() {
+            btn.classList.add('loading');
+            btn.disabled = true;
+        });
+    });
+
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animationPlayState = 'running';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.post-card, .reply-item').forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+{% endblock %}

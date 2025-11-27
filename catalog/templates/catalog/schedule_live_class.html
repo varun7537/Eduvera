@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+{% block title %}Schedule Live Class{% endblock %}
+
+{% block content %}
+<style>
+    .schedule-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #F5F7FC 0%, #DADDE5 100%);
+        padding: 2rem 0;
+    }
+    
+    .schedule-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(45, 108, 223, 0.08);
+        border: none;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .schedule-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(45, 108, 223, 0.12);
+    }
+    
+    .card-header-custom {
+        background: linear-gradient(135deg, #2D6CDF 0%, #1B4F9C 100%);
+        padding: 2rem;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header-custom::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.3; }
+    }
+    
+    .card-header-custom h3 {
+        position: relative;
+        z-index: 1;
+        font-weight: 600;
+        margin: 0;
+        font-size: 1.75rem;
+    }
+    
+    .card-header-custom small {
+        position: relative;
+        z-index: 1;
+        opacity: 0.95;
+    }
+    
+    .form-label-custom {
+        color: #2E2E2E;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-control-custom,
+    .form-select-custom {
+        border: 2px solid #DADDE5;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #F5F7FC;
+    }
+    
+    .form-control-custom:focus,
+    .form-select-custom:focus {
+        border-color: #2D6CDF;
+        box-shadow: 0 0 0 4px rgba(45, 108, 223, 0.1);
+        background: #ffffff;
+        outline: none;
+    }
+    
+    .form-control-custom:hover,
+    .form-select-custom:hover {
+        border-color: #2D6CDF;
+        background: #ffffff;
+    }
+    
+    .form-text-custom {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.35rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    
+    .form-text-custom::before {
+        content: 'ℹ️';
+        font-size: 0.85rem;
+    }
+    
+    .btn-cancel {
+        background: #ffffff;
+        border: 2px solid #DADDE5;
+        color: #2E2E2E;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: #F5F7FC;
+        border-color: #2D6CDF;
+        color: #2D6CDF;
+        transform: translateY(-2px);
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #00C9A7 0%, #00a88a 100%);
+        border: none;
+        color: #ffffff;
+        padding: 0.75rem 2.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 201, 167, 0.3);
+    }
+    
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #00a88a 0%, #008f75 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 201, 167, 0.4);
+    }
+    
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+    
+    .card-footer-custom {
+        background: #F5F7FC;
+        border-top: 1px solid #DADDE5;
+        padding: 1.25rem;
+    }
+    
+    .card-footer-custom small {
+        color: #2E2E2E;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .alert-custom {
+        border: none;
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .alert-success {
+        background: rgba(0, 201, 167, 0.1);
+        color: #00a88a;
+        border-left: 4px solid #00C9A7;
+    }
+    
+    .alert-error,
+    .alert-danger {
+        background: rgba(220, 53, 69, 0.1);
+        color: #c82333;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .alert-warning {
+        background: rgba(255, 201, 71, 0.1);
+        color: #d39e00;
+        border-left: 4px solid #FFC947;
+    }
+    
+    .required-star {
+        color: #dc3545;
+        margin-left: 2px;
+    }
+    
+    .input-icon {
+        color: #2D6CDF;
+        font-size: 1.1rem;
+    }
+    
+    .form-group-animated {
+        animation: fadeInUp 0.5s ease;
+        animation-fill-mode: both;
+    }
+    
+    .form-group-animated:nth-child(1) { animation-delay: 0.1s; }
+    .form-group-animated:nth-child(2) { animation-delay: 0.2s; }
+    .form-group-animated:nth-child(3) { animation-delay: 0.3s; }
+    .form-group-animated:nth-child(4) { animation-delay: 0.4s; }
+    .form-group-animated:nth-child(5) { animation-delay: 0.5s; }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .btn-close {
+        background: transparent;
+        border: none;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
+    
+    .btn-close:hover {
+        opacity: 1;
+    }
+    
+    @media (max-width: 768px) {
+        .schedule-container {
+            padding: 1rem 0;
+        }
+        
+        .card-header-custom {
+            padding: 1.5rem 1rem;
+        }
+        
+        .card-header-custom h3 {
+            font-size: 1.5rem;
+        }
+        
+        .schedule-card {
+            border-radius: 12px;
+        }
+        
+        .btn-cancel,
+        .btn-submit {
+            width: 100%;
+            margin-bottom: 0.75rem;
+        }
+        
+        .d-md-flex {
+            flex-direction: column-reverse;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 1.5rem !important;
+        }
+        
+        .form-control-custom,
+        .form-select-custom {
+            font-size: 0.95rem;
+            padding: 0.65rem 0.9rem;
+        }
+    }
+    
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        filter: invert(38%) sepia(68%) saturate(1500%) hue-rotate(200deg);
+    }
+    
+    select option {
+        padding: 0.5rem;
+    }
+</style>
+
+<div class="schedule-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10 col-12">
+                <div class="card schedule-card">
+                    <div class="card-header-custom text-white text-center">
+                        <h3 class="mb-2">📅 Schedule a New Live Class</h3>
+                        <small>Engage with your students in real-time</small>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+
+                            {% if messages %}
+                                {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-custom alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+
+                            <div class="mb-4 form-group-animated">
+                                <label for="title" class="form-label-custom">
+                                    <span class="input-icon">📝</span>
+                                    Class Title
+                                    <span class="required-star">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="title" 
+                                       id="title"
+                                       class="form-control form-control-custom" 
+                                       placeholder="e.g., Advanced React Hooks & Context API"
+                                       value="{{ form.data.title|default:'' }}" 
+                                       required>
+                                <div class="form-text-custom">Make it descriptive so students know what to expect</div>
+                            </div>
+
+                            <div class="mb-4 form-group-animated">
+                                <label for="live_at" class="form-label-custom">
+                                    <span class="input-icon">🕒</span>
+                                    Date & Time
+                                    <span class="required-star">*</span>
+                                </label>
+                                <input type="datetime-local" 
+                                       name="live_at" 
+                                       id="live_at"
+                                       class="form-control form-control-custom" 
+                                       value="{{ form.data.live_at|date:'Y-m-d\TH:i' }}" 
+                                       required>
+                                <div class="form-text-custom">Choose a time convenient for your students</div>
+                            </div>
+
+                            <div class="mb-4 form-group-animated">
+                                <label for="meet_url" class="form-label-custom">
+                                    <span class="input-icon">🔗</span>
+                                    Meeting Link
+                                    <span class="required-star">*</span>
+                                </label>
+                                <input type="url" 
+                                       name="meet_url" 
+                                       id="meet_url"
+                                       class="form-control form-control-custom" 
+                                       placeholder="https://zoom.us/j/1234567890 or https://meet.google.com/abc-def-ghi"
+                                       value="{{ form.data.meet_url|default:'' }}" 
+                                       required>
+                                <div class="form-text-custom">Ensure the link is accessible to all students</div>
+                            </div>
+
+                            <div class="mb-4 form-group-animated">
+                                <label for="course_id" class="form-label-custom">
+                                    <span class="input-icon">📚</span>
+                                    Select Course
+                                    <span class="required-star">*</span>
+                                </label>
+                                <select name="course_id" id="course_id" class="form-select form-select-custom" required>
+                                    <option value="" disabled {% if not form.data.course_id %}selected{% endif %}>
+                                        -- Choose a course --
+                                    </option>
+                                    {% for course in instructor_courses %}
+                                        <option value="{{ course.id }}" 
+                                                {% if form.data.course_id == course.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ course.title }} {% if course.batch %}({{ course.batch }}){% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 form-group-animated">
+                                <a href="{% url 'instructor_dashboard' %}" class="btn btn-cancel">
+                                    Cancel
+                                </a>
+                                <button type="submit" class="btn btn-submit">
+                                    Schedule Live Class
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card-footer-custom text-center">
+                        <small>
+                            💡 Students will receive an email notification with the meeting link once scheduled
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

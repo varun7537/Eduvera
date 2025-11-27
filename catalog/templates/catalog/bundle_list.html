@@ -1,0 +1,642 @@
+{% extends 'catalog/base.html' %}
+{% block content %}
+
+<style>
+    :root {
+        --primary: #2D6CDF;
+        --primary-dark: #1B4F9C;
+        --bg-light: #F5F7FC;
+        --border-color: #DADDE5;
+        --text-dark: #2E2E2E;
+        --accent-yellow: #FFC947;
+        --accent-green: #00C9A7;
+        --white: #ffffff;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .bundles-container {
+        background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
+        padding: 60px 20px;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 50px;
+        animation: fadeInDown 0.8s ease;
+    }
+
+    .main-title {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 15px;
+        position: relative;
+        display: inline-block;
+    }
+
+    .main-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent-green));
+        border-radius: 2px;
+    }
+
+    .subtitle {
+        font-size: clamp(1rem, 2vw, 1.15rem);
+        color: #5a5a5a;
+        max-width: 600px;
+        margin: 25px auto 0;
+        line-height: 1.6;
+    }
+
+    .stats-section {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 35px 30px;
+        margin-bottom: 50px;
+        box-shadow: 0 4px 20px rgba(45, 108, 223, 0.08);
+        animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .stats-section h3 {
+        color: var(--text-dark);
+        font-size: clamp(1.3rem, 3vw, 1.6rem);
+        margin-bottom: 25px;
+        font-weight: 600;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 25px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 20px;
+        background: var(--bg-light);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        background: var(--white);
+        box-shadow: 0 8px 25px rgba(45, 108, 223, 0.15);
+    }
+
+    .stat-number {
+        display: block;
+        font-size: clamp(1.8rem, 4vw, 2.5rem);
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 8px;
+    }
+
+    .stat-label {
+        display: block;
+        font-size: 0.95rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+    }
+
+    .bundle-card {
+        background: var(--white);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(45, 108, 223, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--border-color);
+        opacity: 0;
+        transform: translateY(30px);
+        position: relative;
+    }
+
+    .bundle-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent-green));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+
+    .bundle-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .bundle-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .bundle-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 35px rgba(45, 108, 223, 0.18);
+        border-color: var(--primary);
+    }
+
+    .card-header-custom {
+        padding: 30px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: var(--white);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header-custom::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .bundle-card:hover .card-header-custom::after {
+        opacity: 1;
+    }
+
+    .bundle-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        line-height: 1.3;
+    }
+
+    .bundle-description {
+        font-size: 0.95rem;
+        opacity: 0.95;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .price-section {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 15px 20px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .price-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .price-currency {
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .price-value {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .card-body-custom {
+        padding: 30px;
+    }
+
+    .courses-section {
+        margin-bottom: 25px;
+    }
+
+    .courses-title {
+        font-size: 1.1rem;
+        color: var(--text-dark);
+        margin-bottom: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .courses-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background: linear-gradient(135deg, var(--primary), var(--accent-green));
+        color: var(--white);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    .courses-list {
+        list-style: none;
+        padding: 0;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .courses-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .courses-list::-webkit-scrollbar-track {
+        background: var(--bg-light);
+        border-radius: 10px;
+    }
+
+    .courses-list::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 10px;
+    }
+
+    .course-item {
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        background: var(--bg-light);
+        border-radius: 8px;
+        color: var(--text-dark);
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+        position: relative;
+        padding-left: 40px;
+    }
+
+    .course-item::before {
+        content: '✓';
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        background: var(--accent-green);
+        color: var(--white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .course-item:hover {
+        background: var(--white);
+        border-left-color: var(--primary);
+        transform: translateX(5px);
+        box-shadow: 0 2px 10px rgba(45, 108, 223, 0.1);
+    }
+
+    .empty-courses {
+        text-align: center;
+        padding: 30px;
+        background: var(--bg-light);
+        border-radius: 10px;
+        color: #999;
+    }
+
+    .action-button {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: var(--white);
+    }
+
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(45, 108, 223, 0.3);
+    }
+
+    .action-button:active {
+        transform: translateY(0);
+    }
+
+    .action-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .action-button.buy-button {
+        background: linear-gradient(135deg, var(--accent-green), #00a389);
+    }
+
+    .action-button.buy-button:hover {
+        box-shadow: 0 8px 20px rgba(0, 201, 167, 0.3);
+    }
+
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        animation: ripple-animation 0.6s ease-out;
+        pointer-events: none;
+    }
+
+    @keyframes ripple-animation {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 30px;
+        background: var(--white);
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(45, 108, 223, 0.08);
+        animation: fadeInUp 0.8s ease;
+    }
+
+    .empty-state h3 {
+        color: var(--text-dark);
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        color: #666;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .bundles-container {
+            padding: 40px 15px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .row {
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        .card-header-custom, .card-body-custom {
+            padding: 25px 20px;
+        }
+
+        .price-value {
+            font-size: 1.6rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-item {
+            padding: 15px;
+        }
+    }
+</style>
+
+<div class="bundles-container">
+    <div class="container">
+
+        <div class="header-section">
+            <h1 class="main-title">Course Bundles</h1>
+            <p class="subtitle">
+                Discover our carefully curated course bundles designed to accelerate your learning journey.
+            </p>
+        </div>
+
+        <div class="stats-section">
+            <h3>Why Choose Our Bundles?</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">{{ bundles|length }}</span>
+                    <span class="stat-label">Available Bundles</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">50</span>
+                    <span class="stat-label">Expert Instructors</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">10000</span>
+                    <span class="stat-label">Happy Students</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">4.9</span>
+                    <span class="stat-label">Average Rating</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            {% for bundle in bundles %}
+                <div class="bundle-card">
+                    <div class="card-header-custom">
+                        <h3 class="bundle-title">{{ bundle.name }}</h3>
+                        <p class="bundle-description">{{ bundle.description|default:"Complete learning package with multiple courses" }}</p>
+                        <div class="price-section">
+                            <span class="price-label">Bundle Price:</span>
+                            <span class="price-currency">$</span>
+                            <span class="price-value">{{ bundle.price }}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body-custom">
+                        <div class="courses-section">
+                            <h4 class="courses-title">
+                                <span class="courses-icon">{{ bundle.courses.all|length }}</span>
+                                Included Courses
+                            </h4>
+                            
+                            {% if bundle.courses.all %}
+                                <ul class="courses-list">
+                                    {% for course in bundle.courses.all %}
+                                        <li class="course-item">{{ course.title }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="empty-courses">
+                                    <p>No courses listed yet</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <button class="action-button" onclick="selectBundle('{{ bundle.id }}', '{{ bundle.name }}')">
+                                Enroll Now
+                            </button>
+                            <a href="{% url 'buy_bundle' bundle.id %}" class="action-button buy-button" style="text-align: center; text-decoration: none; display: block;">
+                                Buy this Bundle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div style="grid-column: 1 / -1;">
+                    <div class="empty-state">
+                        <h3>No Bundles Available</h3>
+                        <p>We're working on creating amazing course bundles for you. Check back soon!</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 100);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.bundle-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        document.querySelectorAll('.action-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!this.disabled) {
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    this.appendChild(ripple);
+                    
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                }
+            });
+        });
+
+        function animateCounter(element, target, duration = 2000) {
+            const isDecimal = target.toString().includes('.');
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = isDecimal ? target.toFixed(1) + '★' : target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    element.textContent = isDecimal ? current.toFixed(1) : Math.floor(current).toLocaleString();
+                }
+            }, 16);
+        }
+
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const text = entry.target.textContent;
+                    const number = parseFloat(text.replace(/[^\d.]/g, ''));
+                    if (number) {
+                        animateCounter(entry.target, number);
+                    }
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.stat-number').forEach(stat => {
+            statsObserver.observe(stat);
+        });
+    });
+
+    function selectBundle(bundleId, bundleName) {
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'Processing...';
+        button.disabled = true;
+
+        setTimeout(() => {
+            console.log(`Enrolling in bundle: ${bundleName} (ID: ${bundleId})`);
+            button.textContent = '✓ Enrolled!';
+            button.style.background = 'linear-gradient(135deg, var(--accent-green), #00a389)';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+                button.style.background = '';
+            }, 2000);
+        }, 1000);
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,1 @@
+from catalog.models import CourseBundle

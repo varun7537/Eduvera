@@ -1,0 +1,1454 @@
+{% extends 'catalog/base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --success-gradient: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        --warning-gradient: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+        --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --card-bg: rgba(255, 255, 255, 0.95);
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --text-primary: #2c3e50;
+        --text-secondary: #6c757d;
+        --text-muted: #95a5a6;
+        --border-color: #e9ecef;
+        --shadow-light: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow-medium: 0 12px 40px rgba(0, 0, 0, 0.15);
+        --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--bg-gradient);
+        min-height: 100vh;
+        font-family: 'Inter', sans-serif;
+        line-height: 1.6;
+        color: var(--text-primary);
+        position: relative;
+    }
+
+    /* Animated Background Elements */
+    .bg-decoration {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .bg-decoration::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: 
+            radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        animation: backgroundMove 20s ease-in-out infinite;
+    }
+
+    @keyframes backgroundMove {
+        0%, 100% { transform: translateX(0) translateY(0); }
+        25% { transform: translateX(20px) translateY(-10px); }
+        50% { transform: translateX(-10px) translateY(20px); }
+        75% { transform: translateX(15px) translateY(5px); }
+    }
+
+    /* Confetti Animation */
+    .confetti-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+        overflow: hidden;
+    }
+
+    .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #f0f;
+        opacity: 0;
+    }
+
+    @keyframes confettiFall {
+        to {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 1;
+        }
+    }
+
+    /* Toast Notification */
+    .toast {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: var(--success-gradient);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow-medium);
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .toast.show {
+        transform: translateX(0);
+    }
+
+    /* Container */
+    .course-container {
+        padding: 2rem 0;
+        min-height: 100vh;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Hero Section with Price & Rating */
+    .course-hero {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-light);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        animation: slideInDown 0.8s ease-out;
+    }
+
+    .course-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: heroShimmer 4s ease-in-out infinite;
+    }
+
+    @keyframes heroShimmer {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(180deg); }
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .course-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .course-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    /* Course Rating Stars */
+    .course-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        animation: fadeInUp 0.8s ease-out 0.5s both;
+    }
+
+    .stars {
+        display: flex;
+        gap: 0.2rem;
+    }
+
+    .star {
+        color: #ffd700;
+        font-size: 1.2rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .star.empty {
+        color: rgba(255, 255, 255, 0.3);
+    }
+
+    .rating-text {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    /* Price Badge */
+    .price-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    .price-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .current-price {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .original-price {
+        font-size: 1.2rem;
+        text-decoration: line-through;
+        opacity: 0.7;
+        margin-left: 0.5rem;
+    }
+
+    .discount-badge {
+        background: var(--warning-gradient);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(253, 203, 110, 0.4);
+        animation: pulse 2s infinite;
+    }
+
+    /* Reading Time */
+    .reading-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        animation: fadeInUp 0.8s ease-out 0.7s both;
+    }
+
+    /* Share Buttons */
+    .share-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        animation: fadeInUp 0.8s ease-out 0.8s both;
+    }
+
+    .share-label {
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    .share-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .share-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .share-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .share-btn.whatsapp {
+        background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    }
+
+    .share-btn.twitter {
+        background: linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%);
+    }
+
+    .share-btn.linkedin {
+        background: linear-gradient(135deg, #0077B5 0%, #005885 100%);
+    }
+
+    .share-btn.facebook {
+        background: linear-gradient(135deg, #1877F2 0%, #0d5dbf 100%);
+    }
+
+    .share-btn.copy {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Course Info Cards */
+    .course-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-light);
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: slideInUp 0.8s ease-out;
+    }
+
+    .info-card:nth-child(1) { animation-delay: 0.1s; }
+    .info-card:nth-child(2) { animation-delay: 0.2s; }
+    .info-card:nth-child(3) { animation-delay: 0.3s; }
+    .info-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .info-card:hover::before {
+        left: 100%;
+    }
+
+    .info-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+    }
+
+    .info-icon.instructor { background: var(--info-gradient); color: white; }
+    .info-icon.category { background: var(--warning-gradient); color: white; }
+    .info-icon.duration { background: var(--success-gradient); color: white; }
+    .info-icon.level { background: var(--secondary-gradient); color: white; }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .info-title {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    /* Main Content */
+    .course-content {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-light);
+        border: 1px solid var(--glass-border);
+        margin-bottom: 2rem;
+        animation: slideInUp 0.8s ease-out 0.5s both;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .content-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .content-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-gradient);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .content-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .course-description {
+        line-height: 1.8;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Lessons Section */
+    .lesson-card {
+        background: var(--glass-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s ease;
+        animation: slideInUp 0.6s ease-out;
+        backdrop-filter: blur(10px);
+    }
+
+    .lesson-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .lesson-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 0.5rem 0;
+    }
+
+    .lesson-content {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .lesson-video {
+        width: 100%;
+        max-width: 480px;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+
+    .lesson-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .lesson-status.completed {
+        color: #00b894;
+    }
+
+    .btn-lesson-complete {
+        background: var(--success-gradient);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+    }
+
+    .btn-lesson-complete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+        color: white;
+    }
+
+    /* Quizzes Section */
+    .quiz-card {
+        background: var(--glass-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        animation: slideInUp 0.6s ease-out;
+        backdrop-filter: blur(10px);
+    }
+
+    .quiz-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .quiz-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .btn-quiz {
+        background: var(--accent-gradient);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-quiz:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+        color: white;
+    }
+
+    /* Reviews Section */
+    .reviews-section {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-light);
+        border: 1px solid var(--glass-border);
+        margin-bottom: 2rem;
+        animation: slideInUp 0.8s ease-out 0.6s both;
+        backdrop-filter: blur(10px);
+    }
+
+    .review-card {
+        background: var(--glass-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .review-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .review-username {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .review-date {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .review-comment {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    .review-form {
+        margin-top: 2rem;
+    }
+
+    .review-form textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        resize: vertical;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .review-form textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
+    }
+
+    /* Action Buttons */
+    .action-section {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--shadow-light);
+        border: 1px solid var(--glass-border);
+        text-align: center;
+        animation: slideInUp 0.8s ease-out 0.7s both;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-enroll, .btn-login, .btn-back, .btn-submit, .btn-complete, .btn-forum, .btn-certificate {
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin: 0.5rem;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-enroll {
+        background: var(--success-gradient);
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+    }
+
+    .btn-login { background: var(--info-gradient); box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3); }
+    .btn-back { background: linear-gradient(135deg, #636e72 0%, #2d3436 100%); box-shadow: 0 4px 15px rgba(99, 110, 114, 0.3); }
+    .btn-submit { background: var(--primary-gradient); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+    .btn-complete { background: var(--warning-gradient); box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3); }
+    .btn-forum { background: var(--accent-gradient); box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3); text-decoration: none; display: inline-block; }
+    .btn-certificate { background: var(--warning-gradient); box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3); text-decoration: none; display: inline-block; }
+
+    .btn-enroll:hover, .btn-login:hover, .btn-back:hover, .btn-submit:hover, .btn-complete:hover, .btn-forum:hover, .btn-certificate:hover {
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-enroll:hover { box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4); }
+    .btn-login:hover { box-shadow: 0 8px 25px rgba(116, 185, 255, 0.4); }
+    .btn-back:hover { box-shadow: 0 8px 25px rgba(99, 110, 114, 0.4); }
+    .btn-submit:hover { box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
+    .btn-complete:hover { box-shadow: 0 8px 25px rgba(253, 203, 110, 0.4); }
+    .btn-forum:hover { box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4); }
+    .btn-certificate:hover { box-shadow: 0 8px 25px rgba(253, 203, 110, 0.4); }
+
+    /* Loading Animation */
+    .btn-loading {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Progress Bar */
+    .enrollment-progress {
+        width: 100%;
+        height: 6px;
+        background: rgba(0, 184, 148, 0.2);
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--success-gradient);
+        width: 0%;
+        border-radius: 3px;
+        transition: width 0.5s ease;
+    }
+
+    .course-progress {
+        width: 100%;
+        height: 20px;
+        background: var(--border-color);
+        border-radius: 5px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .course-progress-fill {
+        height: 100%;
+        background: var(--success-gradient);
+        border-radius: 5px;
+        transition: width 0.5s ease;
+    }
+
+    .progress-text {
+        font-size: 1rem;
+        color: var(--text-primary);
+        margin-top: 0.5rem;
+        font-weight: 600;
+    }
+
+    /* Success Message */
+    .success-message {
+        background: var(--success-gradient);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        animation: slideInDown 0.5s ease-out;
+        display: none;
+    }
+
+    .success-message.show {
+        display: block;
+    }
+
+    /* Floating Action Button */
+    .floating-action {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: var(--primary-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        animation: fadeInUp 1s ease-out 1s both;
+    }
+
+    .floating-action:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Scroll Progress */
+    .scroll-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 3px;
+        background: var(--primary-gradient);
+        z-index: 1000;
+        transition: width 0.3s ease;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .course-container {
+            padding: 1rem;
+        }
+
+        .course-hero {
+            padding: 2rem 1.5rem;
+        }
+
+        .course-title {
+            font-size: 2rem;
+        }
+
+        .course-subtitle {
+            font-size: 1rem;
+        }
+
+        .current-price {
+            font-size: 1.5rem;
+        }
+
+        .share-section {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .course-content, .reviews-section, .action-section {
+            padding: 1.5rem;
+        }
+
+        .btn-enroll, .btn-login, .btn-back, .btn-submit, .btn-complete, .btn-forum, .btn-certificate, .btn-lesson-complete, .btn-quiz {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        .course-info {
+            grid-template-columns: 1fr;
+        }
+
+        .lesson-video {
+            max-width: 100%;
+        }
+
+        .quiz-card {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .floating-action {
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+        }
+
+        .toast {
+            bottom: 20px;
+            right: 20px;
+            left: 20px;
+            width: auto;
+            transform: translateY(200px);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .course-hero {
+            padding: 1.5rem 1rem;
+        }
+
+        .course-title {
+            font-size: 1.75rem;
+        }
+
+        .course-content, .reviews-section, .action-section {
+            padding: 1rem;
+        }
+
+        .content-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .content-icon {
+            margin-right: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-section {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="bg-decoration"></div>
+<div class="scroll-progress" id="scrollProgress"></div>
+<div class="confetti-container" id="confettiContainer"></div>
+<div class="toast" id="toast">
+    <span>✅</span>
+    <span id="toastMessage">Link copied to clipboard!</span>
+</div>
+
+<div class="course-container">
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="course-hero animate-on-scroll">
+            <div class="hero-content">
+                <h1 class="course-title">{{ course.title }}</h1>
+                <p class="course-subtitle">Master the skills you need to succeed</p>
+                
+                <!-- Course Rating -->
+                <div class="course-rating">
+                    <div class="stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= course.rating|default:4 %}
+                                <span class="star">★</span>
+                            {% else %}
+                                <span class="star empty">★</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <span class="rating-text">{{ course.rating|default:"4.0" }} ({{ reviews.count }} reviews)</span>
+                </div>
+
+                <!-- Price Section -->
+                <div class="price-section">
+                    <div class="price-badge">
+                        <span class="current-price">{{ course.price|default:"₹2,999" }}</span>
+                        {% if course.original_price %}
+                            <span class="original-price">{{ course.original_price }}</span>
+                        {% endif %}
+                    </div>
+                    {% if course.discount_percentage %}
+                        <div class="discount-badge">
+                            🎉 {{ course.discount_percentage }}% OFF
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Reading Time Estimator -->
+                <div class="reading-time">
+                    <span>📖</span>
+                    <span id="readingTime">Estimated reading time: Calculating...</span>
+                </div>
+
+                <!-- Share Section -->
+                <div class="share-section">
+                    <span class="share-label">Share this course:</span>
+                    <div class="share-buttons">
+                        <a href="#" class="share-btn whatsapp" onclick="shareOnWhatsApp(); return false;" title="Share on WhatsApp">
+                            <span>📱</span>
+                        </a>
+                        <a href="#" class="share-btn twitter" onclick="shareOnTwitter(); return false;" title="Share on Twitter/X">
+                            <span>🐦</span>
+                        </a>
+                        <a href="#" class="share-btn linkedin" onclick="shareOnLinkedIn(); return false;" title="Share on LinkedIn">
+                            <span>💼</span>
+                        </a>
+                        <a href="#" class="share-btn facebook" onclick="shareOnFacebook(); return false;" title="Share on Facebook">
+                            <span>👍</span>
+                        </a>
+                        <button class="share-btn copy" onclick="copyLink()" title="Copy course link">
+                            <span>🔗</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Information Cards -->
+        <div class="course-info">
+            <div class="info-card animate-on-scroll" style="animation-delay: 0.1s;">
+                <div class="info-icon instructor">👨‍🏫</div>
+                <div class="info-title">Instructor</div>
+                <div class="info-value">{{ course.instructor }}</div>
+            </div>
+            <div class="info-card animate-on-scroll" style="animation-delay: 0.2s;">
+                <div class="info-icon category">📚</div>
+                <div class="info-title">Category</div>
+                <div class="info-value">{{ course.category.name }}</div>
+            </div>
+            <div class="info-card animate-on-scroll" style="animation-delay: 0.3s;">
+                <div class="info-icon duration">⏱️</div>
+                <div class="info-title">Duration</div>
+                <div class="info-value">{{ course.duration|default:"8 weeks" }}</div>
+            </div>
+            <div class="info-card animate-on-scroll" style="animation-delay: 0.4s;">
+                <div class="info-icon level">📊</div>
+                <div class="info-title">Level</div>
+                <div class="info-value">{{ course.level|default:"Beginner" }}</div>
+            </div>
+        </div>
+
+        <!-- Course Content -->
+        <div class="course-content animate-on-scroll">
+            <div class="content-header">
+                <div class="content-icon">📝</div>
+                <h2 class="content-title">Course Description</h2>
+            </div>
+            <div class="course-description">
+                {{ course.description|linebreaksbr }}
+            </div>
+
+            <!-- Skills Section -->
+            <div class="content-header">
+                <div class="content-icon">⭐</div>
+                <h2 class="content-title">Skills You Will Gain</h2>
+            </div>
+            <ul class="list-unstyled">
+                {% if course.skills %}
+                    {% for skill in course.skills|split_skills %}
+                        <li class="mb-2">✅ {{ skill }}</li>
+                    {% empty %}
+                        <li class="mb-2 text-muted">No skills listed.</li>
+                    {% endfor %}
+                {% else %}
+                    <li class="mb-2 text-muted">No skills listed.</li>
+                {% endif %}
+            </ul>
+
+            <!-- Course Features -->
+            <div class="content-header">
+                <div class="content-icon">⭐</div>
+                <h2 class="content-title">What You'll Learn</h2>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">✅ Industry-relevant skills and knowledge</li>
+                        <li class="mb-2">✅ Hands-on projects and assignments</li>
+                        <li class="mb-2">✅ Expert instruction and guidance</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">✅ Certificate of completion</li>
+                        <li class="mb-2">✅ Lifetime access to materials</li>
+                        <li class="mb-2">✅ Community support and networking</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Lessons Section -->
+            <div class="content-header">
+                <div class="content-icon">📚</div>
+                <h2 class="content-title">Lessons</h2>
+            </div>
+            <div class="lessons-list">
+                {% for lesson in course.lessons.all %}
+                    <div class="lesson-card animate-on-scroll" style="animation-delay: {{ forloop.counter0|multiply:0.1|add:0.6 }}s;">
+                        <div class="lesson-title">{{ lesson.title }}</div>
+                        <div class="lesson-content">{{ lesson.content|linebreaksbr }}</div>
+                        {% if lesson.video %}
+                            <video class="lesson-video" controls>
+                                <source src="{% url 'stream_video' lesson.id %}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% endif %}
+                        {% if user.is_authenticated %}
+                            {% with progress=lesson_progress|get_item:lesson.id %}
+                                {% if progress and progress.completed %}
+                                    <div class="lesson-status completed">
+                                        <span>✅</span> Completed
+                                    </div>
+                                {% else %}
+                                    <form action="{% url 'mark_lesson_complete' lesson.id %}" method="post" class="lesson-complete-form">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-lesson-complete">Mark as Complete</button>
+                                    </form>
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <div class="lesson-card animate-on-scroll">
+                        <div class="lesson-title text-muted">No lessons yet.</div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Quizzes Section -->
+            <div class="content-header">
+                <div class="content-icon">❓</div>
+                <h2 class="content-title">Quizzes</h2>
+            </div>
+            <div class="quizzes-list">
+                {% for quiz in course.quizzes.all %}
+                    <div class="quiz-card animate-on-scroll" style="animation-delay: {{ forloop.counter0|multiply:0.1|add:0.9 }}s;">
+                        <div class="quiz-title">{{ quiz.title }}</div>
+                        <a href="{% url 'take_quiz' quiz.id %}" class="btn-quiz">Take Quiz</a>
+                    </div>
+                {% empty %}
+                    <div class="quiz-card animate-on-scroll">
+                        <div class="quiz-title text-muted">No quizzes yet.</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section animate-on-scroll">
+            <div class="content-header">
+                <div class="content-icon">💬</div>
+                <h2 class="content-title">Reviews</h2>
+            </div>
+            <div class="reviews-list">
+                {% for review in reviews %}
+                    <div class="review-card animate-on-scroll" style="animation-delay: {{ forloop.counter0|multiply:0.1|add:0.6 }}s;">
+                        <div class="review-header">
+                            <span class="review-username">{{ review.user.username }}</span>
+                            <span class="review-date">{{ review.created_at|date:"Y-m-d H:i" }}</span>
+                        </div>
+                        <p class="review-comment">{{ review.comment }}</p>
+                    </div>
+                {% empty %}
+                    <div class="review-card animate-on-scroll">
+                        <p class="review-comment text-muted">No reviews yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if user.is_authenticated %}
+                <div class="review-form">
+                    <h4 class="content-title">Leave a Review</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-submit">Post Review</button>
+                    </form>
+                </div>
+            {% else %}
+                <p class="course-description">
+                    <a href="{% url 'login' %}" class="btn btn-login">🔐 Login to write a review</a>
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Action Section -->
+        <div class="action-section animate-on-scroll">
+            <div class="success-message" id="successMessage">
+                🎉 Enrollment successful! Welcome to the course.
+            </div>
+
+            {% if user.is_authenticated %}
+                {% if enrolled %}
+                    <div class="content-header">
+                        <div class="content-icon">📈</div>
+                        <h4 class="content-title">Course Progress</h4>
+                    </div>
+                    <div class="course-progress">
+                        <div class="course-progress-fill" style="width: {{ progress }}%;"></div>
+                    </div>
+                    <p class="progress-text">{{ progress }}% Complete</p>
+                {% endif %}
+                <div class="enrollment-progress">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <form action="{% url 'enroll_course' course.pk %}" method="post" id="enrollForm">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-enroll" id="enrollBtn">
+                        <span class="btn-text">🚀 Enroll Now</span>
+                    </button>
+                </form>
+                {% for enrollment in user.enrollment_set.all %}
+                    {% if enrollment.course.id == course.id %}
+                        {% if not enrollment.is_completed %}
+                            <form action="{% url 'mark_completed' course.pk %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-complete">✅ Mark as Completed</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'download_certificate' course.pk %}" class="btn btn-certificate">
+                                📜 Download Certificate (PDF)
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <a href="{% url 'course_forum' course.pk %}" class="btn btn-forum">
+                    💬 Go to Course Forum
+                </a>
+            {% else %}
+                <p class="mb-3">
+                    <strong>Ready to start learning?</strong><br>
+                    <span class="text-muted">Create an account or sign in to enroll in this course.</span>
+                </p>
+                <a href="{% url 'login' %}" class="btn btn-login">
+                    🔐 Sign In to Enroll
+                </a>
+                <a href="{% url 'course_forum' course.pk %}" class="btn btn-forum">
+                    💬 Go to Course Forum
+                </a>
+            {% endif %}
+
+            <a href="/" class="btn btn-back">
+                ← Back to Courses
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="floating-action" onclick="scrollToTop()" title="Back to Top">
+    ↑
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calculate reading time
+    function calculateReadingTime() {
+        const content = document.querySelector('.course-content');
+        if (content) {
+            const text = content.innerText;
+            const wordCount = text.trim().split(/\s+/).length;
+            const readingTime = Math.ceil(wordCount / 200); // 200 words per minute
+            document.getElementById('readingTime').textContent = `Estimated reading time: ${readingTime} min`;
+        }
+    }
+    calculateReadingTime();
+
+    // Scroll progress indicator
+    const scrollProgress = document.getElementById('scrollProgress');
+    if (scrollProgress) {
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            scrollProgress.style.width = progress + '%';
+        });
+    }
+
+    // Confetti animation
+    function createConfetti() {
+        const container = document.getElementById('confettiContainer');
+        const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#00b894', '#fdcb6e'];
+        
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDelay = Math.random() * 3 + 's';
+            confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            container.appendChild(confetti);
+            
+            confetti.style.animation = 'confettiFall 3s linear forwards';
+            
+            setTimeout(() => {
+                confetti.remove();
+            }, 5000);
+        }
+    }
+
+    // Enrollment form handling with confetti
+    const enrollForm = document.getElementById('enrollForm');
+    const enrollBtn = document.getElementById('enrollBtn');
+    const progressFill = document.getElementById('progressFill');
+    const successMessage = document.getElementById('successMessage');
+
+    if (enrollForm && enrollBtn && progressFill && successMessage) {
+        enrollForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            enrollBtn.classList.add('btn-loading');
+            enrollBtn.disabled = true;
+            
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 20;
+                progressFill.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    setTimeout(() => {
+                        createConfetti(); // Trigger confetti
+                        successMessage.classList.add('show');
+                        enrollBtn.classList.remove('btn-loading');
+                        enrollBtn.innerHTML = '<span class="btn-text">✅ Enrolled!</span>';
+                        enrollBtn.disabled = false;
+                        setTimeout(() => {
+                            enrollForm.submit();
+                        }, 1000);
+                    }, 500);
+                }
+            }, 300);
+        });
+    }
+
+    // Lesson complete form handling
+    const lessonForms = document.querySelectorAll('.lesson-complete-form');
+    lessonForms.forEach(form => {
+        const button = form.querySelector('.btn-lesson-complete');
+        if (button) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                button.classList.add('btn-loading');
+                button.disabled = true;
+                setTimeout(() => {
+                    form.submit();
+                }, 1000);
+            });
+        }
+    });
+
+    // Floating action button
+    window.scrollToTop = function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
+
+    // Show/hide floating button based on scroll position
+    const floatingAction = document.querySelector('.floating-action');
+    if (floatingAction) {
+        window.addEventListener('scroll', function() {
+            floatingAction.style.display = window.pageYOffset > 300 ? 'flex' : 'none';
+        });
+    }
+
+    // Intersection Observer for animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observe all animated elements
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    animatedElements.forEach(el => observer.observe(el));
+
+    // Parallax effect for hero section
+    const hero = document.querySelector('.course-hero');
+    if (hero) {
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * -0.5;
+            if (scrolled < 500) { // Limit parallax effect
+                hero.style.transform = `translateY(${rate}px)`;
+            }
+        });
+    }
+
+    // Typing animation for course title
+    const courseTitle = document.querySelector('.course-title');
+    if (courseTitle) {
+        const originalText = courseTitle.textContent;
+        courseTitle.textContent = '';
+        let i = 0;
+        const typeWriter = function() {
+            if (i < originalText.length) {
+                courseTitle.textContent += originalText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            }
+        };
+        setTimeout(typeWriter, 500);
+    }
+});
+
+// Share functions
+function shareOnWhatsApp() {
+    const url = window.location.href;
+    const title = document.querySelector('.course-title').textContent;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(title + ' - ' + url)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+function shareOnTwitter() {
+    const url = window.location.href;
+    const title = document.querySelector('.course-title').textContent;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank');
+}
+
+function shareOnLinkedIn() {
+    const url = window.location.href;
+    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+    window.open(linkedInUrl, '_blank');
+}
+
+function shareOnFacebook() {
+    const url = window.location.href;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(facebookUrl, '_blank');
+}
+
+function copyLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(function() {
+        showToast('🔗 Link copied to clipboard!');
+    }).catch(function(err) {
+        showToast('❌ Failed to copy link');
+    });
+}
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    toastMessage.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+</script>
+{% endblock %}
